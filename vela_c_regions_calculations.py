@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 from regions import PixCoord, CirclePixelRegion
 
-os.chdir("C:/Users/16472/Desktop/Queens 2020 Fall/msc. Thesis/Vela C/dcf_python/images")
+os.chdir("/Users/a16472/Desktop/dcf_python/vcImages/")
 
 def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
 
@@ -116,9 +116,9 @@ Imshow(pol_int, vmin=np.mean(pol_int)-np.std(pol_int)*3, vmax=np.mean(pol_int)+n
 
 
 ## Selecting Region
-x_cen = 228
-y_cen = 143
-rad = 30
+x_cen = 60
+y_cen = 60
+rad = 34
 
 # Showing where we are taking the cut.
 fig, ax = plt.subplots(figsize=(6,6))
@@ -227,7 +227,7 @@ from scipy.optimize import curve_fit
 def linear_fit(x, m, b):
     return m*x + b
 
-start =13
+start = 13
 end = 18
 
 popt_linear, _ = curve_fit(linear_fit,  bin_edges_sq[start:end], 1-(cos_disp_sq/(1-0.5*err_binned))[start:end])
@@ -284,13 +284,12 @@ def houde_fitting_function(distance, b_strength, delta, effec_depth):
             * (np.exp(-distance**2 / (2*(delta**2 + 2*W**2))))
 
 
-func = houde_fitting_function
+# func = houde_fitting_function
+# b2_l = linear_fit(bin_edges_am[:-1]**2, *popt_linear) - (1-(cos_disp_sq/(1-0.5*err_binned)))
+# popt_houde, __ = curve_fit(func, bin_edges_am[:-1], b2_l, p0=[0.28, 10, 3]) # Houde Fit (eq 53)
+# popt_houde, __ = curve_fit(func, bin_edges_am[:-1], b2_l, p0=popt_houde)
 
-b2_l = linear_fit(bin_edges_am[:-1]**2, *popt_linear) - (1-(cos_disp_sq/(1-0.5*err_binned)))
-popt_houde, __ = curve_fit(func, bin_edges_am[:-1], b2_l, p0=[0.28, 10, 3]) # Houde Fit (eq 53)
-popt_houde, __ = curve_fit(func, bin_edges_am[:-1], b2_l, p0=popt_houde)
-
-popt_gauss, __ = curve_fit(gauss_function, bin_edges_am[:-1], b2_l) # Gauss Fit
+popt_gauss, __ = curve_fit(gauss_function, bin_edges_am[:-1], b2_l, p0=[np.max(bin_edges_am), np.max(bin_edges_am)/2]) # Gauss Fit
 
 
 plt.figure(figsize = (12, 8))
@@ -298,7 +297,7 @@ plt.title("Linear Fit and Data Difference")
 plt.ylabel("b$^2$(l)")
 plt.xlabel("L (Arcmins)")
 plt.plot(bin_edges_am[:-1], b2_l, linestyle ="none", marker="X", label="Fit and Data Difference")
-plt.plot(bin_edges_am[:-1], houde_fitting_function(bin_edges_am[:-1], *popt_houde), label="Houde Fit", linestyle="--")
+# plt.plot(bin_edges_am[:-1], houde_fitting_function(bin_edges_am[:-1], *popt_houde), label="Houde Fit", linestyle="--")
 plt.plot(bin_edges_am[:-1], gauss_function(bin_edges_am[:-1],*popt_gauss), label="Gaussian Fit", linestyle="--")
 plt.legend()
 plt.show()
@@ -307,8 +306,8 @@ print("Amplitude, sigma")
 print("Gaussian fit parameters are: ", popt_gauss)
 print("FWHM: ", popt_gauss[1] *2.35)
 
-print("\nB Ratio, Delta, Effective Depth")
-print("Houde fit parameters are: ", popt_houde)
+# print("\nB Ratio, Delta, Effective Depth")
+# print("Houde fit parameters are: ", popt_houde)
 
 
 ## All Three plots in one.

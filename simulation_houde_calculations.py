@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 from regions import PixCoord, CirclePixelRegion
 
-os.chdir("C:/Users/16472/Desktop/Queens 2020 Fall/msc. Thesis/Vela C/dcf_python/images")
+os.chdir("/Users/a16472/Desktop/dcf_python/testing/")
 
 def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
 
@@ -90,18 +90,20 @@ def psi(Q, U):
 
 ## Calculate Stokes Parameter I
 # The ang returned is not scaled positively, but it really shouldn't be a problem
+#
+# I = fits.open("ccldL10B5M10n0025v2_0p65pc_PImap.fits")[0].data
+# bang = fits.open("ccldL10B5M10n0025v2_0p65pc_bangmap.fits")[0].data
 
-I = fits.open("ccldL10B5M10n0025v2_0p65pc_PImap.fits")[0].data
-bang = fits.open("ccldL10B5M10n0025v2_0p65pc_bangmap.fits")[0].data
+# Imshow(I)
+bang = fits.open("/Users/a16472/Desktop/dcf_python/testing/L1M10_0.65_ds_0.2.fits")[0].data
 
-Imshow(I)
 Imshow(bang)
 
 
 ## Selecting Region
-x_cen = 250
-y_cen = 250
-rad = 30
+x_cen = 50
+y_cen = 50
+rad = 50
 
 # Showing where we are taking the cut.
 fig, ax = plt.subplots(figsize=(6,6))
@@ -169,7 +171,7 @@ for i in range(nump):
         delta_phi_arr = calc_rel_angle_crossn(phi_ref, phi[(i+1):(nump)])
 
     # Don't Have Errors atm.
-    # err_dphi_arr = np.sqrt(dphi[i]**2 + dphi[(i+1):(nump)]**2 - 2.0*dphi[i]*dphi[(i+1):(nump)] * np.exp((-0.25*delta_r_arr**2)/w**2))
+    # err_dphi_arr = np.sqrt(dphi[i]**2 + dphi[(i+1):(nump)]**2 - 2.0*dphi[i]*dphi[(i+1):(nump)] *      np.exp((-0.25*delta_r_arr**2)/w**2))
 
     delta_r.append(delta_r_arr)
     delta_phi.append(delta_phi_arr)
@@ -181,7 +183,7 @@ delta_r = np.array(delta_r)
 delta_phi = np.array(delta_phi[:-1]) # last value is added twice for some reason.
 # err_dphi = np.array(err_dphi)
 
-delta_r = np.concatenate(delta_r).ravel() * 10 / 512 #CONVERT THIS TO UNITS OF PARSEC
+delta_r = np.concatenate(delta_r).ravel() * 10 / 512  # CONVERT THIS TO UNITS OF PARSEC
 delta_r_squared = delta_r**2
 delta_phi = np.concatenate(delta_phi).ravel()
 # err_dphi = np.concatenate(err_dphi).ravel()
@@ -191,16 +193,22 @@ delta_phi = np.concatenate(delta_phi).ravel()
 # My calculated variance
 nbins = 21
 
-bin_edges_as = (np.linspace(0, 57, 58) + 0.5) * 10 / 512
+bin_edges_as = (np.linspace(0, 57, 58) + 0.5) #* 10 / 512 * 10
+# bin_edges_as = np.insert(bin_edges_sq, 0, 0)
 bin_edges = (np.linspace(0, nbins, nbins+1) + 0.5) * 10 / 512
+# bin_edges = np.insert(bin_edges, 0, 0)
 
 cos_disp, bin_edges_cos, bin_number_cos = stats.binned_statistic((delta_r), np.cos(delta_phi[:]), 'mean', bins = bin_edges, range = (0, 300))
 cos_disp_sq, bin_edges_sq, bin_number_sq = stats.binned_statistic((delta_r)**2, np.cos(delta_phi[:]), 'mean', bins=bin_edges**2, range=(0, 100))
+
 # err_binned, bin_edges_err, bin_number_err = stats.binned_statistic(delta_r, err_dphi, 'mean', bins=bin_edges, range = (0, 1770))
 # error_brs = np.sqrt(np.sin(err_binned)**2 * err_binned**2 + (3/4) * np.cos(err_binned)**2 * err_binned**4)
 
-bin_edges_sq = np.insert(bin_edges_sq, 0, 0)
-cos_disp_sq = np.insert(cos_disp_sq, 0, 1)
+# bin_edges_sq = np.insert(bin_edges_sq, 0, 0)
+# cos_disp_sq = np.insert(cos_disp_sq, 0, 1)
+
+# cos_disp_sq[0] = 1
+
 # err_binned = np.insert(err_binned, 0, 0)
 
 
@@ -229,8 +237,13 @@ print("Calculated Y-Intercept is: ", popt_linear[1])
 ## Curve Fitting (Arcmin)
 nbins = 21
 
-bin_edges_ps = (np.linspace(0, nbins, nbins+1) + 0.5) * 10 / 512
-cos_disp, bin_edges_ps, bin_number_cos = stats.binned_statistic((delta_r), np.cos(delta_phi[:]), 'mean', bins = bin_edges, range = (0, 10))
+# bin_edges_ps = (np.linspace(0, nbins, nbins+1) + 0.5) * 10 / 512
+# bin_edges_ps = np.insert(bin_edges_ps, 0, 0)
+cos_disp, bin_edges_ps, bin_number_cos = stats.binned_statistic((delta_r), np.cos(delta_phi[:]), 'mean', bins= bin_edges, range = (0, 20))
+
+# bin_edges_ps = np.insert(bin_edges_ps, 0, 0)
+# cos_disp = np.insert(cos_disp, 0, 1)
+# cos_disp[0] = 1
 
 plt.figure(figsize = (12, 8))
 plt.title("Linear Fit Parsec")
@@ -252,7 +265,7 @@ def gauss_function(x, a, sigma):
 
 b2_l = linear_fit(bin_edges_ps[:-1]**2, *popt_linear) - (1-cos_disp)
 popt_gauss, __ = curve_fit(gauss_function, bin_edges_ps[:-1], b2_l) #Gaussian Fit
-# popt_gauss, __ = curve_fit(gauss_function, bin_edges_am[:-1], b2_l, p0=popt_gauss)
+popt_gauss, __ = curve_fit(gauss_function, bin_edges_ps[:-1], b2_l, p0=popt_gauss)
 
 plt.figure(figsize = (12, 8))
 plt.title("Linear Fit and Data Difference")
@@ -269,7 +282,6 @@ print("FWHM: ", popt_gauss[1] *2.35)
 
 # print("\nB Ratio, Delta, Effective Depth")
 # print("Houde fit parameters are: ", popt_houde)
-
 
 
 ## All Three plots in one.
@@ -296,4 +308,3 @@ plt.ylabel("b$^2$(l)")
 plt.xlabel("L (Parsecs)")
 plt.legend()
 plt.show()
-

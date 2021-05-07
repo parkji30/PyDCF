@@ -1,2 +1,0 @@
-class figure:
-    pass

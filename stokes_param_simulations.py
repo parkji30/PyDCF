@@ -9,7 +9,6 @@ os.chdir("C:/Users/16472/Desktop/Queens 2020 Fall/msc. Thesis/MAGNETIC_FIELD_DIS
 
 
 ## Functions
-
 def psi(Q, U):
     """
     Calculate azimuth angle.
