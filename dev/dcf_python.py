@@ -11,9 +11,7 @@ def Stokes_Polarization(Q, U):
     """
     Calcualtes the polarization of the angle using stokes Q and U maps.
     """
-
     return np.arctan2(Q, U)/2
-
 
 def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
 
@@ -64,7 +62,7 @@ def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
         d_ang0 = np.arctan2(np.sqrt(CdC), np.abs(vdgr)) # taking the abs here.
         return d_ang0
 
-def cos_disp_calculations(data, ttl, ds_scale, bins, fit0=7, fitf=17):
+def cos_disp_calculations(data, ds_scale):
 
     x, y, pix_ang, dphi = [], [], [], []
     c = 0
@@ -113,10 +111,15 @@ def cos_disp_calculations(data, ttl, ds_scale, bins, fit0=7, fitf=17):
     # err_dphi = np.array(err_dphi)
 
     delta_r = np.concatenate(delta_r).ravel() * 10 / 512 * ds_scale # CONVERT THIS TO UNITS OF PARSEC
-    delta_r_squared = delta_r**2
     delta_phi = np.concatenate(delta_phi).ravel()
     # err_dphi = np.concatenate(err_dphi).ravel()
-    
+    return delta_r, delta_phi
+
+
+def dispersion_fit(distance, polarization, ttl, bins, fit0=7, fitf=17):
+    delta_r = distance,
+    delta_phi = polarization
+
     nbins = bins 
     bin_edges = (np.linspace(0, nbins, 21) + 0.5) * 10 / 512 * ds_scale
     # bin_edges = np.insert(bin_edges, 0, 0)

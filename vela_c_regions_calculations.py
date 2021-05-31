@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 from regions import PixCoord, CirclePixelRegion
 
-os.chdir("/Users/a16472/Desktop/dcf_python/vcImages/")
+os.chdir("/Users/a16472/Desktop/dcf_python/vela-c/")
 
 def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
 
@@ -65,7 +65,7 @@ def Imshow(image, **kwargs):
     Simple function to an image.
     """
     plt.figure(figsize=(8, 6))
-    plt.imshow(image)
+    plt.imshow(image, origin='lower')
     plt.colorbar()
     plt.show()
 
@@ -107,12 +107,12 @@ def report_stats(array):
 # The ang returned is not scaled positively, but it really shouldn't be a problem
 masking = np.load("true_masking.npy")
 image_data = fits.open("VelaC_500_intermediate_regrid_30as_pix_ang.fits")[0].data
-image_data_var = fits.open("VelaC_500_intermediate_regrid_30as_pix_var_ang.fits")[0].data * masking
-pol_int = fits.open("VelaC_500_intermediate_regrid_30as_pix_I.fits")[0].data * masking
+image_data_var = fits.open("VelaC_500_intermediate_regrid_30as_pix_var_ang.fits")[0].data
+# pol_int = fits.open("VelaC_500_intermediate_regrid_30as_pix_I.fits")[0].data * masking
 
 Imshow(image_data)
 Imshow(image_data_var)
-Imshow(pol_int, vmin=np.mean(pol_int)-np.std(pol_int)*3, vmax=np.mean(pol_int)+np.std(pol_int)*3)
+# Imshow(pol_int, vmin=np.mean(pol_int)-np.std(pol_int)*3, vmax=np.mean(pol_int)+np.std(pol_int)*3)
 
 
 ## Selecting Region
@@ -123,7 +123,7 @@ rad = 34
 # Showing where we are taking the cut.
 fig, ax = plt.subplots(figsize=(6,6))
 region = CirclePixelRegion(center=PixCoord(x=x_cen, y=y_cen), radius=rad)
-ax.imshow(image_data)
+plt.imshow(image_data, origin='lower')
 region.plot(ax=ax, color='red')
 plt.show()
 
@@ -336,4 +336,5 @@ plt.ylabel("b$^2$(l)")
 plt.xlabel("L (Arcmin)")
 plt.legend()
 plt.show()
+
 
