@@ -266,6 +266,7 @@ def gauss_function(x, a, sigma):
     """
     Gaussian fit function.
     """
+    # a * np.exp(-(x)**2 / (4 * sigma**2)) # Beam Contribution
     return a * np.exp(-(x)**2 / (2 * sigma**2))
 
 def houde_fitting_function(distance, b_strength, delta, effec_depth):
