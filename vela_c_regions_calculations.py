@@ -60,48 +60,6 @@ def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
         return d_ang0
 
 
-def Imshow(image, **kwargs):
-    """
-    Simple function to an image.
-    """
-    plt.figure(figsize=(8, 6))
-    plt.imshow(image, origin='lower')
-    plt.colorbar()
-    plt.show()
-
-
-def plt_show(x, y):
-    """
-    Show relation between x and y.
-    """
-    plt.figure(figsize = (10, 10))
-    plt.plot(x, y)
-    plt.show()
-
-
-def hist_show(array, title='', xlabel='Value'):
-    """
-    Histogram of array
-    """
-    plt.figure()
-    plt.hist(array, bins=350)
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel("Counts")
-    plt.show()
-
-
-def report_stats(array):
-    """
-    Basic Stats Calculatiiosn
-    """
-    array = array[~np.isnan(array)]
-    mean = np.mean(array)
-    std = np.std(array)
-    median = np.median(array)
-    print("Mean: ", mean)
-    print("Median: ", median)
-    print("Standard Deviation: ", std)
 
 ## Calculate Stokes Parameter I
 # The ang returned is not scaled positively, but it really shouldn't be a problem
