@@ -65,7 +65,6 @@ def cos_disp_calculations(data, ds_scale):
     """
     """
     x, y, pix_ang, dphi = [], [], [], []
-    c = 0
 
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
@@ -73,13 +72,10 @@ def cos_disp_calculations(data, ds_scale):
                 x.append(i)
                 y.append(j)
                 pix_ang.append(data[i][j])
-
     x = np.array(x)
     y = np.array(y)
     ang = np.array(pix_ang)
-
-    nump = len(ang) 
-    W = 2.5 / 2.35 # arc seconds
+    nump = len(ang)
     delta_r = []
     delta_phi = []
     phi = ang
@@ -98,8 +94,7 @@ def cos_disp_calculations(data, ds_scale):
         delta_phi.append(delta_phi_arr)
 
     delta_r = np.array(delta_r)
-    delta_phi = np.array(delta_phi[:-1]) # Last value is added twice for some reason.
-
+    delta_phi = np.array(delta_phi[:-1])
     delta_r = np.concatenate(delta_r).ravel() * 10 / 512 * ds_scale # CONVERT THIS TO UNITS OF PARSEC
     delta_phi = np.concatenate(delta_phi).ravel()
     return delta_r, delta_phi
@@ -108,7 +103,7 @@ def cos_disp_calculations(data, ds_scale):
 def multi_fit(delta_r, delta_phi, ttl, ds_scale, outer_distance, fit0=7, fitf=17, show=False):
     """
     """
-    bin_range = (np.linspace(0, outer_distance, 21) + 0.5) * 10 / 512 
+    bin_range = (np.linspace(0, outer_distance, 21) + 0.5) * 10 / 512  * ds_scale
 
     # Binned Statistics calculation for the turbulent to ordered ratio.
     cos_disp, bin_edges_cos, bin_number_cos = stats.binned_statistic(delta_r, np.cos(delta_phi), 'mean', bins = bin_range)
@@ -121,7 +116,7 @@ def multi_fit(delta_r, delta_phi, ttl, ds_scale, outer_distance, fit0=7, fitf=17
     cos_disp = np.insert(cos_disp, 0, 1)
 
     # Linear fit for the first two plots.
-    popt_linear, _ = curve_fit(linear_fit,  bin_edges_sq[fit0 : fitf], 1-cos_disp_sq[fit0 : fitf])
+    popt_linear, _ = curve_fit(linear_fit,  bin_edges_sq[fit0:fitf], 1-cos_disp_sq[fit0:fitf])
 
     # Gaussian fit for the third plot.
     b2_l = linear_fit(bin_edges[:-1]**2, *popt_linear) - (1-cos_disp)
