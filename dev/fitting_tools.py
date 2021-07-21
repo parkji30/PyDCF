@@ -4,7 +4,7 @@ from scipy.optimize import curve_fit
 
 def Imshow(image, **kwargs):
     """
-    Simple function to an image.
+    Simple function display to an image.
     """
     plt.figure(figsize=(8, 6))
     plt.imshow(image, origin='lower')
@@ -23,7 +23,7 @@ def plt_show(x, y):
 
 def hist_show(array, title='', xlabel='Value'):
     """
-    Histogram of array
+    Histogram of array.
     """
     plt.figure()
     plt.hist(array, bins=350)
