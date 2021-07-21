@@ -46,6 +46,13 @@ def report_stats(array):
     print("Standard Deviation: ", std)
 
 
+def total_gauss_function(x, a, W, delta):
+    """
+    Gaussian fit function.
+    """
+    return a * np.exp(-(x)**2 / (2*(delta**2 + 2*W**2)))
+
+
 def gauss_function(x, a, sigma):
     """
     Gaussian fit function.

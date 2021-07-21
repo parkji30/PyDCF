@@ -6,7 +6,56 @@ from astropy.io import fits
 from regions import PixCoord, CirclePixelRegion, RectanglePixelRegion
 from scipy.optimize import curve_fit
 from fitting_tools import *
-plt.rcParams.update({'font.size': 16})
+
+def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
+
+    angle1 = np.array(angle1)
+    angle2 = np.array(angle2)
+
+    n = len(angle1)
+
+    if n == 1:
+        x1 = (-1.0) * np.sin(angle1[0])
+        y1 = np.cos(angle1[0])
+        x2 = (-1.0) * np.sin(angle2[0])
+        y2 = np.cos(angle2[0])
+        v1 = np.array([x1, y1, 0])
+        v2 = np.array([x2, y2, 0])
+        C = np.cross(v1, v2)
+        CdC = np.dot(C, C)
+        vdgr = np.dot(v1, v2)
+        d_ang0 = np.arctan2(np.sqrt(CdC), vdgr)
+        
+        return np.array([d_ang0])
+    
+    elif n > 1:
+        
+        x1 = (-1.0) * np.sin(angle1.reshape(1, n))
+        y1 = np.cos(angle1.reshape(1, n))
+        x2 = (-1.0) * np.sin(angle2.reshape(1, n))
+        y2 = np.cos(angle2.reshape(1, n))
+        v1 = np.array([x1, y1, np.zeros((1, n))])
+        v2 = np.array([x2, y2, np.zeros((1, n))])
+        vi = np.asmatrix(v1).T
+        vf = np.asmatrix(v2).T
+        
+        try:
+            C = np.cross(vi, vf)
+        except:
+            print("crossing error!")
+
+        CdC = np.sum(C * C, 1)
+
+        vdgr = []
+        for i in range(len(vi)):
+            vector = v1[0][0][i] * v2[0][0][i] + \
+                        v1[1][0][i] * v2[1][0][i] + \
+                        v1[2][0][i] * v2[2][0][i]
+            vdgr.append(vector)
+        vdgr = np.array(vdgr)
+        d_ang0 = np.arctan2(np.sqrt(CdC), np.abs(vdgr)) 
+        
+        return d_ang0
 
 
 def cos_disp_calculations(data, ds_scale):
@@ -51,7 +100,7 @@ def cos_disp_calculations(data, ds_scale):
     return delta_r, delta_phi
 
 
-def single_fit(delta_r, delta_phi, ttl, edge_length, beam_res, fit0, fitf, beam=False, show=True):
+def MDCF_fit(delta_r, delta_phi, ttl, edge_length, beam_res, fit0, fitf, beam=False, show=True):
     """
     """
     pixel_scale = 10 / 512 # User defines this but well go with Athena's for now.
@@ -67,6 +116,7 @@ def single_fit(delta_r, delta_phi, ttl, edge_length, beam_res, fit0, fitf, beam=
     cos_disp = np.insert(cos_disp, 0, 1)
     cos_disp_sq = np.insert(cos_disp_sq, 0, 1)
     
+    # Fits for subplots
     popt_linear, _ = curve_fit(linear_fit,  bin_edges_sq[fit0:fitf], 1-cos_disp_sq[fit0:fitf]) # Linear Fit
     b2_l = linear_fit(bin_edges_norm**2, *popt_linear) - (1 - cos_disp) # Linear Fit Squared
     popt_gauss, __ = curve_fit(gauss_function, bin_edges_norm, b2_l) # Gaussian Fit
@@ -77,6 +127,7 @@ def single_fit(delta_r, delta_phi, ttl, edge_length, beam_res, fit0, fitf, beam=
     print("FWHM: ", popt_gauss[1] * 2.35)
     print("Number of Bins: ", nbins)
     
+    # Turbulent Correlation Length
     analytic_turb_cof = np.sqrt(popt_gauss[1]**2 - 2*(W)**2)
     print("Analytic Turbulent Corrleation Length: ", analytic_turb_cof)
     
@@ -99,12 +150,10 @@ def single_fit(delta_r, delta_phi, ttl, edge_length, beam_res, fit0, fitf, beam=
     plt.subplot(3, 1, 3)
     plt.plot(bin_edges_norm, gauss_function(bin_edges_norm, *popt_gauss), linestyle="--", label='Gaussian Fit')
     plt.plot(bin_edges_norm, b2_l, linestyle ="none", marker=".", label=ttl + r' b$^2$(l)')
-    if beam:
-        beam_gauss = lambda x : popt_gauss[0] * np.exp(-(x)**2 / (2*(2 * W**2)))
-        plt.plot(bin_edges_norm, beam_gauss(bin_edges_norm), label='Gaussian Beam Contribution', color='r', linestyle='--')
-        plt.plot(bin_edges_norm, total_gauss_function(bin_edges_norm, popt_gauss[0], W, analytic_turb_cof), linestyle ="--", marker=".", label='Analytic Turbulent + Beam', color='g')
-    plt.ylabel("b$^2$(l)")
+    plt.plot(bin_edges_norm, gauss_function(bin_edges_norm, a=popt_gauss[0], sigma=W), label='Gaussian Beam Contribution', color='r', linestyle='--')
+    plt.plot(bin_edges_norm, total_gauss_function(bin_edges_norm, popt_gauss[0], W, analytic_turb_cof), linestyle ="--", marker=".", label='Analytic Turbulent + Beam', color='g')
     plt.xlabel("L (Parsecs)", fontsize=11.5)
+    plt.ylabel("b$^2$(l)")
     plt.legend(loc=1)
     if show:
         plt.show()
@@ -118,22 +167,16 @@ def turbulent_cells(delta, cloud_dep, beam_res):
     return (delta**2 + 2*beam_res**2) * cloud_dep / (np.sqrt(2*np.pi)*delta**3)    
   
     
-def data_cut(x_cen, y_cen, rad, data, show=False):
-    """
-    Cuts a circular region of data based on the map provided.
-    """
-    region = CirclePixelRegion(center=PixCoord(x=x_cen, y=y_cen), radius=rad)
-    center = PixCoord(x_cen, y_cen)
-    reg = CirclePixelRegion(center, rad)
-    mask = reg.to_mask()
-    mask = reg.to_mask(mode='center')
-    dt = mask.cutout(data)
+def data_cut(x_cen, y_cen, rad, image, show=False):
     if show:
-        fig, ax = plt.subplots(figsize=(6, 6))
+        fig, ax = plt.subplots(figsize=(10,6))
         region = RectanglePixelRegion(center=PixCoord(x=x_cen, y=y_cen), width=rad, height=rad)
-        center = PixCoord(x_cen, y_cen)
-        plt.imshow(data)
+        plt.imshow(image, cmap='hsv', vmin=-np.pi/2, vmax=np.pi/2)
         plt.colorbar()
-        region.plot(ax=ax, color='red')
+        region.plot(ax=ax, color='white')
         plt.show()
+    reg = RectanglePixelRegion(center=PixCoord(x=x_cen, y=y_cen), width=rad, height=rad)
+    mask = reg.to_mask() 
+    mask = reg.to_mask(mode='center')
+    dt = mask.cutout(image)
     return dt
