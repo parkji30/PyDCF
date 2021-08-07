@@ -22,3 +22,7 @@ For those who use juptyer notebook, you can follow the instructions given in <in
 For those that prefer to run from terminal, please check out the tutorial section for further instructions.
 
 # Tutorial
+```python
+data = fits.open("L1M10_0.1.fits")[0].data
+
+```
