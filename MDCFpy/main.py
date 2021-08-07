@@ -36,7 +36,7 @@ uncorrected_turbulent_ratio, turbulent_coefficient = MDCF_fit(data_region,
                                                               fitf = 25)
 
 
-N = turbulent_cells(turb_cof, 1.45, 0.2/2.35)
+N = turbulent_cells(turb_cof, 1.45, 0.1/2.35)
 print("Turbulent Cells:", round(N))
 
 print("Corrected Turbulent to Ordered Ratio")
