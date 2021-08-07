@@ -1,17 +1,13 @@
 import numpy as np
-import os
 from scipy import stats
 import matplotlib.pyplot as plt
 from astropy.io import fits
-from regions import PixCoord, CirclePixelRegion, RectanglePixelRegion
 from scipy.optimize import curve_fit
 from fitting_tools import *
 
 def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
-
     angle1 = np.array(angle1)
     angle2 = np.array(angle2)
-
     n = len(angle1)
 
     if n == 1:
@@ -25,11 +21,8 @@ def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
         CdC = np.dot(C, C)
         vdgr = np.dot(v1, v2)
         d_ang0 = np.arctan2(np.sqrt(CdC), vdgr)
-        
         return np.array([d_ang0])
-    
     elif n > 1:
-        
         x1 = (-1.0) * np.sin(angle1.reshape(1, n))
         y1 = np.cos(angle1.reshape(1, n))
         x2 = (-1.0) * np.sin(angle2.reshape(1, n))
@@ -38,7 +31,6 @@ def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
         v2 = np.array([x2, y2, np.zeros((1, n))])
         vi = np.asmatrix(v1).T
         vf = np.asmatrix(v2).T
-        
         try:
             C = np.cross(vi, vf)
         except:
@@ -54,11 +46,10 @@ def calc_rel_angle_crossn(angle1, angle2, no_rescale=False):
             vdgr.append(vector)
         vdgr = np.array(vdgr)
         d_ang0 = np.arctan2(np.sqrt(CdC), np.abs(vdgr)) 
-        
         return d_ang0
 
 
-def cos_disp_calculations(data, ds_scale):
+def cos_disp_calculations(data, pixel_unit, W):
     """
     """
     x, y, pix_ang, dphi = [], [], [], []
@@ -69,12 +60,11 @@ def cos_disp_calculations(data, ds_scale):
                 x.append(i)
                 y.append(j)
                 pix_ang.append(data[i][j])
+                
     x = np.array(x)
     y = np.array(y)
     ang = np.array(pix_ang)
-
     nump = len(ang) 
-    W = 2.5 / 2.35 # arc seconds
     delta_r = []
     delta_phi = []
     phi = ang
@@ -92,30 +82,29 @@ def cos_disp_calculations(data, ds_scale):
         delta_r.append(delta_r_arr)
         delta_phi.append(delta_phi_arr)
 
-    delta_r = np.array(delta_r)
+    delta_r = np.array(delta_r) 
     delta_phi = np.array(delta_phi[:-1]) # Last value is added twice for some reason.
-
-    delta_r = np.concatenate(delta_r).ravel() * 10 / 512 * ds_scale # CONVERT THIS TO UNITS OF PARSEC
+    delta_r = np.concatenate(delta_r).ravel() * pixel_unit
     delta_phi = np.concatenate(delta_phi).ravel()
     return delta_r, delta_phi
 
 
-def MDCF_fit(delta_r, delta_phi, ttl, edge_length, beam_res, fit0, fitf, beam=False, show=True):
+def MDCF_fit(data, pixel_scale, edge_length, beam_size, fit0, fitf, name='Region'):
     """
     """
-    pixel_scale = 10 / 512 # User defines this but well go with Athena's for now.
+    delta_r, delta_phi = cos_disp_calculations(data, pixel_scale, beam_size)
     bin_edge = edge_length / pixel_scale
-    nbins = np.floor(edge_length / beam_res * 5) # Always want 5 samples / beam.
-    W = beam_res / 2.35
+    nbins = np.floor((edge_length / (beam_size * 2.35)) * 5 ) # Always want 5 samples / beam.
     
+    print(nbins)
+    W = beam_size
     bin_edges = (np.linspace(0, bin_edge, int(nbins))) * pixel_scale 
 
     cos_disp, bin_edges_norm, bin_number_cos = stats.binned_statistic(delta_r, np.cos(delta_phi), 'mean', bins=bin_edges)
     cos_disp_sq, bin_edges_sq, bin_number_sq = stats.binned_statistic((delta_r)**2, np.cos(delta_phi), 'mean', bins=bin_edges**2)
-
     cos_disp = np.insert(cos_disp, 0, 1)
     cos_disp_sq = np.insert(cos_disp_sq, 0, 1)
-    
+
     # Fits for subplots
     popt_linear, _ = curve_fit(linear_fit,  bin_edges_sq[fit0:fitf], 1-cos_disp_sq[fit0:fitf]) # Linear Fit
     b2_l = linear_fit(bin_edges_norm**2, *popt_linear) - (1 - cos_disp) # Linear Fit Squared
@@ -135,28 +124,26 @@ def MDCF_fit(delta_r, delta_phi, ttl, edge_length, beam_res, fit0, fitf, beam=Fa
     plt.subplot(3, 1, 1)
     plt.title("Dispersion Analysis")
     plt.plot(bin_edges_sq[fit0:fitf],  (1-cos_disp_sq)[fit0:fitf], marker='X', label='Fitting Range', color='r')
-    plt.plot(bin_edges_sq, 1-cos_disp_sq, linestyle ="none", marker=".", label=ttl + " Dispersion")
+    plt.plot(bin_edges_sq, 1-cos_disp_sq, linestyle ="none", marker=".", label=name + " Dispersion")
     plt.plot(bin_edges_sq, linear_fit(bin_edges_sq, *popt_linear), linestyle="--")
     plt.ylabel(r'$<1 - COS\phi>$')
     plt.xlabel("L $^2$ (Parsecs)", fontsize=11.5)
     plt.legend()
     plt.subplot(3, 1, 2)
     plt.plot(bin_edges_norm[fit0:fitf],  (1-cos_disp)[fit0:fitf], marker='X', label='Fitting Range', linestyle='--', color='r')
-    plt.plot(bin_edges_norm, 1-cos_disp, linestyle ="none", marker=".", label = ttl + " Dispersion")
+    plt.plot(bin_edges_norm, 1-cos_disp, linestyle ="none", marker=".", label = name + " Dispersion")
     plt.plot(bin_edges_norm, linear_fit(bin_edges_norm**2, *popt_linear), linestyle="--")
     plt.ylabel(r'$<1 - COS\phi>$')
     plt.xlabel("L (Parsecs)", fontsize=11.5)
     plt.legend()
     plt.subplot(3, 1, 3)
     plt.plot(bin_edges_norm, gauss_function(bin_edges_norm, *popt_gauss), linestyle="--", label='Gaussian Fit')
-    plt.plot(bin_edges_norm, b2_l, linestyle ="none", marker=".", label=ttl + r' b$^2$(l)')
+    plt.plot(bin_edges_norm, b2_l, linestyle ="none", marker=".", label=name + r' b$^2$(l)')
     plt.plot(bin_edges_norm, gauss_function(bin_edges_norm, a=popt_gauss[0], sigma=W), label='Gaussian Beam Contribution', color='r', linestyle='--')
-    plt.plot(bin_edges_norm, total_gauss_function(bin_edges_norm, popt_gauss[0], W, analytic_turb_cof), linestyle ="--", marker=".", label='Analytic Turbulent + Beam', color='g')
+    # plt.plot(bin_edges_norm, total_gauss_function(bin_edges_norm, popt_gauss[0], W, analytic_turb_cof), linestyle ="--", marker=".", label='Analytic Turbulent + Beam', color='g')
     plt.xlabel("L (Parsecs)", fontsize=11.5)
     plt.ylabel("b$^2$(l)")
     plt.legend(loc=1)
-    if show:
-        plt.show()
     return popt_linear[-1], analytic_turb_cof
         
 
@@ -166,17 +153,24 @@ def turbulent_cells(delta, cloud_dep, beam_res):
     """
     return (delta**2 + 2*beam_res**2) * cloud_dep / (np.sqrt(2*np.pi)*delta**3)    
   
-    
-def data_cut(x_cen, y_cen, rad, image, show=False):
-    if show:
-        fig, ax = plt.subplots(figsize=(10,6))
-        region = RectanglePixelRegion(center=PixCoord(x=x_cen, y=y_cen), width=rad, height=rad)
-        plt.imshow(image, cmap='hsv', vmin=-np.pi/2, vmax=np.pi/2)
-        plt.colorbar()
-        region.plot(ax=ax, color='white')
-        plt.show()
-    reg = RectanglePixelRegion(center=PixCoord(x=x_cen, y=y_cen), width=rad, height=rad)
-    mask = reg.to_mask() 
-    mask = reg.to_mask(mode='center')
-    dt = mask.cutout(image)
-    return dt
+  
+def staikos_DCF(field_density, sigma_v, sigma_pol):
+    """
+    The Modified DCF method as written by Staikos et al. 2021
+    """
+    return np.sqrt(2*np.pi*field_density) * sigma_v / np.sqrt(sigma_pol)
+
+
+def classical_DCF(field_density, sigma_v, sigma_pol):
+    """
+    The classical dcf method as written by David, Chandrasekhar and Fermi.
+    """
+    return np.sqrt(4*np.pi*field_density) * sigma_v / sigma_pol
+
+
+def modified_DCF(field_density, velocity_los, b_ratio):
+    """
+    The modified DCF method as written by Houde et al. (2008, 2011, 2013, 2016)
+    """
+    return np.sqrt(4*np.pi*field_density) * velocity_los * b_ratio**(-0.5)
+

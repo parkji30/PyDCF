@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from regions import PixCoord, RectanglePixelRegion
 
 def Imshow(image, **kwargs):
     """
@@ -73,3 +74,18 @@ def linear_fit(x, m, b):
     Linear Fit Function.
     """
     return m*x + b
+
+
+def data_cut(x_cen, y_cen, rad, image, show=False):
+    if show:
+        fig, ax = plt.subplots(figsize=(10,6))
+        region = RectanglePixelRegion(center=PixCoord(x=x_cen, y=y_cen), width=rad, height=rad)
+        plt.imshow(image, cmap='hsv', vmin=-np.pi/2, vmax=np.pi/2)
+        plt.colorbar()
+        region.plot(ax=ax, color='white')
+        plt.show()
+    reg = RectanglePixelRegion(center=PixCoord(x=x_cen, y=y_cen), width=rad, height=rad)
+    mask = reg.to_mask()
+    mask = reg.to_mask(mode='center')
+    dt = mask.cutout(image)
+    return dt

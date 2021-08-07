@@ -23,15 +23,18 @@ rad = 50
 # Taking a smaller region from the entire map.
 data_region = data_cut(x_cen, y_cen, rad, data, show=False)
 
-# Calculating the structure function analysis of the smaller region.
-dr, dphi = cos_disp_calculations(data_region, ds_scale=1)
 
-
-## Corrected Turbulent to Ordered Ratio
 fit0_01 = 20
 fitf_01 = 25
-uncorrected_turbulent_ratio, turb_cof = MDCF_fit(dr, dphi, 'L1M10_0.2', edge_length=1.0, \
-                                         beam_res=0.2, fit0=fit0_01, fitf=fitf_01, beam=True)
+
+# Calculating the structure function analysis of the smaller region.
+uncorrected_turbulent_ratio, turbulent_coefficient = MDCF_fit(data_region,
+                                                              pixel_scale = 10/512,
+                                                              edge_length = 1.0,
+                                                              beam_size = 0.1,
+                                                              fit0 = 7,
+                                                              fitf = 25)
+
 
 N = turbulent_cells(turb_cof, 1.45, 0.2/2.35)
 print("Turbulent Cells:", round(N))
