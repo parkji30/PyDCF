@@ -94,9 +94,8 @@ def MDCF_fit(data, pixel_scale, edge_length, beam_size, fit0, fitf, name='Region
     """
     delta_r, delta_phi = cos_disp_calculations(data, pixel_scale, beam_size)
     bin_edge = edge_length / pixel_scale
-    nbins = np.floor((edge_length / (beam_size * 2.35)) * 5 ) # Always want 5 samples / beam.
+    nbins = np.floor((edge_length / (beam_size)) * 5) # Always want 5 samples / beam.
     
-    print(nbins)
     W = beam_size
     bin_edges = (np.linspace(0, bin_edge, int(nbins))) * pixel_scale 
 
@@ -113,7 +112,7 @@ def MDCF_fit(data, pixel_scale, edge_length, beam_size, fit0, fitf, name='Region
     print("Y-intercept (Uncorrected Turbulent-Ordered Ratio): ", popt_linear[-1])
     print('[ Amplitude  Sigma ]')
     print("Gaussian parameters are: ", popt_gauss)
-    print("FWHM: ", popt_gauss[1] * 2.35)
+    print("FWHM: ", np.abs(popt_gauss[1] * 2.35))
     print("Number of Bins: ", nbins)
     
     # Turbulent Correlation Length
@@ -140,10 +139,10 @@ def MDCF_fit(data, pixel_scale, edge_length, beam_size, fit0, fitf, name='Region
     plt.plot(bin_edges_norm, gauss_function(bin_edges_norm, *popt_gauss), linestyle="--", label='Gaussian Fit')
     plt.plot(bin_edges_norm, b2_l, linestyle ="none", marker=".", label=name + r' b$^2$(l)')
     plt.plot(bin_edges_norm, gauss_function(bin_edges_norm, a=popt_gauss[0], sigma=W), label='Gaussian Beam Contribution', color='r', linestyle='--')
-    # plt.plot(bin_edges_norm, total_gauss_function(bin_edges_norm, popt_gauss[0], W, analytic_turb_cof), linestyle ="--", marker=".", label='Analytic Turbulent + Beam', color='g')
     plt.xlabel("L (Parsecs)", fontsize=11.5)
     plt.ylabel("b$^2$(l)")
     plt.legend(loc=1)
+    plt.show()
     return popt_linear[-1], analytic_turb_cof
         
 
