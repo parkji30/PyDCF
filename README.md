@@ -17,7 +17,7 @@ import regions
 # MDCFpy 
 Currently there is only a Python3 implementation of the method (future C version will be imminent).
 
-For those who use juptyer notebook, you can follow the instructions given in <ins>MDCF_Analysis_Example.ipynb</ins> for clear instructions on how to use the script.
+For those who use juptyer notebook, you can follow the instructions given in <ins>MDCF_Analysis_Example.ipynb</ins>.
 
 For those that prefer to run from terminal, please check out the tutorial section for further instructions.
 
