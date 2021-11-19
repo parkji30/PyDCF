@@ -8,13 +8,9 @@ This method is based off the paper written by Houde et al. (2009)- https://arxiv
 
 # Dependencies
 
-Make sure to install the follow packages using pip in Python.
+Make sure to install the follow packages using pip in Python by downloading the requirements.txt file.
 ```python
-import numpy 
-import matplotlib.pyplot 
-import scipy 
-import astropy
-import regions
+pip install -r requirements.txt
 ```
 
 
