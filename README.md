@@ -6,11 +6,14 @@ The Modified Davis Chandrasekhar Fermi method is an proposed theory that relates
 This method is based off the paper written by Houde et al. (2009)- https://arxiv.org/pdf/0909.5227.pdf.
 
 
-# Dependencies
+# Installation 
 
-Make sure to install the follow packages using pip in Python by downloading the requirements.txt file.
+Make sure to install the dependencies using pip in Python by downloading the requirements.txt file. This program is primarily used as a script and can be incorporated into your project.
+
 ```python
 pip install -r requirements.txt
 ```
+
+# Running the Program
 
 
