@@ -1,10 +1,13 @@
-# Modified-DCF_Python
-The Modified Davis Chandrasekhar Fermi method is an proposed theory that relates the polarization of light to the large scale magnetic field strength of the interstellar medium.
+# Modified Davis Chandrasekhar Fermi Method (Python)
+Star formation is one of nature's many mysteries that has no clear explanation among astrophysicists and astronomers. Two fundamental forces of nature- Electromagnetism and Gravity, are believed to play a pivotal role during this process but appear to be in opposition to each other based on our current scientific theories.
+
+The Modified Davis Chandrasekhar Fermi method is an proposed theory that relates the polarization of light to the large scale magnetic field strength of the interstellar medium. Through this method, we can analyze polarization maps in order to have a stronger understanding of the role that Magnetic fields play in the Star Formation Process.
 
 This method is based off the paper written by Houde et al. (2009)- https://arxiv.org/pdf/0909.5227.pdf.
 
 
 # Dependencies
+
 Make sure to install the follow packages using pip in Python.
 ```python
 import numpy 
@@ -14,15 +17,4 @@ import astropy
 import regions
 ```
 
-# MDCFpy 
-Currently there is only a Python3 implementation of the method (future C version will be imminent).
 
-For those who use juptyer notebook, you can follow the instructions given in <ins>MDCF_Analysis_Example.ipynb</ins>.
-
-For those that prefer to run from terminal, please check out the tutorial section for further instructions.
-
-# Tutorial
-```python
-data = fits.open("L1M10_0.1.fits")[0].data
-
-```
