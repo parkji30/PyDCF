@@ -14,6 +14,7 @@ Make sure to install the dependencies using pip in Python by downloading the req
 pip install -r requirements.txt
 ```
 
-# Running the Program
+# Tutorial
+Check out the jupyter notebook in the MDCFPy for a walkthrough tutorial on how to run the program.
 
 
