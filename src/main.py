@@ -6,6 +6,7 @@ from astropy.io import fits
 from scipy.optimize import curve_fit
 from dcf_python import *
 from fitting_tools import *
+from magnetic_field_calculations import *
 
 ## Loading the polarization angle data
 data = fits.open("L1M10_0.1.fits")[0].data
@@ -44,3 +45,11 @@ if N > 1:
     print(np.sqrt(round(N) * uncorrected_turbulent_ratio))
 else:
     print(np.sqrt(uncorrected_turbulent_ratio))
+
+
+## Calculate Magnetic Field Strength
+density = ''
+velocity = ''
+
+mdcf_strength = modified_DCF(density, velocity, round(N) * uncorrected_turbulent_ratio)
+print("The MDCF Field Strength Value is: ", mdcf_strength)
