@@ -15,6 +15,6 @@ pip install -r requirements.txt
 ```
 
 # Tutorial
-Check out the jupyter notebook in the MDCFPy for a walkthrough tutorial on how to run the program.
+Check out the jupyter notebook in the src directory for a walkthrough tutorial on how to run the program.
 
 
