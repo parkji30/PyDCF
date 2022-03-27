@@ -1,7 +1,6 @@
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
-from astropy.io import fits
 from scipy.optimize import curve_fit
 from regions import PixCoord, RectanglePixelRegion
 plt.rcParams.update({'font.size': 16})
@@ -94,13 +93,9 @@ def angular_dispersion_calculation(data, edge_length, beam_resolution, pixel_sca
     # User defines this but well go with Athena's for now.
     bin_edge = edge_length / pixel_scale
     
-    print(bin_edge)
-    
     if beam_resolution == 0:
         nbins = 21
     else:    
-        print(edge_length)
-        print(beam_resolution)
         nbins = np.floor((edge_length / beam_resolution * 5)) # Always want 5 samples / beam.
     
     print(f'Structure function analysis used: {nbins} number of bins')
@@ -168,3 +163,15 @@ def turbulent_cells(delta, cloud_dep, beam_res):
     """
     """
     return ((delta**2 + 2*(beam_res**2)) * cloud_dep) / (np.sqrt(2*np.pi) * delta**3)
+
+
+def turbulent_autocorrelation(distance, b_ratio, delta, W, ED):
+    """
+    b_strength: turbulent to large scale magnetic field ratio
+    delta: delta
+    a:
+
+    Used to fit the gaussian for the 3rd plot.
+    """
+    return  np.sqrt(2*np.pi) * b_ratio**2 * (delta**3 / ((delta**2 + 2*W**2) * ED)) \
+            * (np.exp(-distance**2 / (2*(delta**2 + 2*W**2))))

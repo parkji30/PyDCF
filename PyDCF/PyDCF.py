@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
-import * from dcf_python
+from dispersion_analysis import *
+from scipy.stats import circstd
 
-class DCFPy:
+class PyDCF:
 
-    def __init__(self, polarization, velocity, density, W, pixel_scale):
+    def __init__(self, polarization, velocity, density, beam_resolution, pixel_scale):
         """
         Initialize a new MDCFPy module object
         """
@@ -12,7 +13,7 @@ class DCFPy:
         self.velocity_data = velocity
         self.density_data = density
 
-        self.beam_resolution = W
+        self.beam_resolution = beam_resolution
         self.pixel_scale = pixel_scale
 
         self.angular_dispersion_analysis = []
@@ -21,32 +22,40 @@ class DCFPy:
         self.turbulent_cells = 0
         self.uncorrected_turbulent_ratio = 0
 
-
-    def calculate_angular_dispersions(self, edge_length)
+    def calculate_angular_dispersions(self, edge_length=0):
         """
         Calculate the angular dispersions for the L and L^2 space
         using the specified edge_length
         """
+
+        if edge_length == 0:
+            edge_length = 5 * self.beam_resolution
+            print("Edge length set to 0, using 5 times the beam resolution instead...")
+
         self.angular_dispersion_analysis = \
-                            angular_dispersion_calculations(self.polarization_data,
-                                                            self.edge_length,
+                            angular_dispersion_calculation(self.polarization_data,
+                                                            edge_length,
                                                             self.beam_resolution,
                                                             self.pixel_scale)
 
+    def HH09_fit(self, fit0, fitf, cloud_depth):
+        """
+        """
+        cos_disp = self.angular_dispersion_analysis[0]
+        bin_edges_norm = self.angular_dispersion_analysis[1]
+        cos_disp_sq = self.angular_dispersion_analysis[2]
+        bin_edges_sq = self.angular_dispersion_analysis[3]
+        print(cos_disp)
+        print(bin_edges_norm)
 
-    def HH09_fit(data_pack, fit0, fitf, W, cloud_depth):
-        """
-        """
-        cos_disp = data_pack[0]
-        bin_edges_norm = data_pack[1]
-        cos_disp_sq = data_pack[2]
-        bin_edges_sq = data_pack[3]
+        W = self.beam_resolution / 2.35 # As defined in (Houde et al. 2009)
 
         cos_disp[1] = (cos_disp[0] + cos_disp[2]) / 2 # Interpreting data to remove NaaN values.
         cos_disp_sq[1] = (cos_disp_sq[0] + cos_disp_sq[2]) / 2 # Interpreting data to remove NaaN values.
 
         popt_linear, _ = curve_fit(linear_fit,  bin_edges_sq[fit0:fitf], 1-cos_disp_sq[fit0:fitf]) # Linear Fit
         b2_l = linear_fit(bin_edges_norm**2, *popt_linear) - (1-cos_disp) # Linear Fit Squared
+
         popt_gauss, __ = curve_fit(gauss_function, bin_edges_norm, b2_l) # Gaussian Fit
         popt_houde, __ = curve_fit(lambda x, b_ratio, delta: turbulent_autocorrelation(x, b_ratio, delta, W, cloud_depth), bin_edges_norm, b2_l)
 
@@ -102,33 +111,35 @@ class DCFPy:
         self.uncorrected_turbulent_ratio = uncorrected_turbulent_ratio
 
 
-    def HH09_DCF(self):
+    def HH09DCF_calculation(self):
         """
         Bfield calculation using HH09 method.
         """
-        mean_density = np.mean(self.density)
-        velocity_dispersion = np.std(self.velocity)
+        mean_density = np.mean(self.density_data * (2.3 * 1.67e-24))
+        velocity_dispersion = np.std(self.velocity_data * 1e6)
 
         b_ratio = self.turbulent_cells * self.uncorrected_turbulent_ratio
         return np.sqrt(4 * np.pi * mean_density) * velocity_dispersion * b_ratio**(-0.5)
 
 
-    def classical_DCF_calculation(self, mean_density, velocity_dispersion correction_factor=1):
+    def classicalDCF_calculation(self, correction_factor=1):
         """
         Bfield calculation for the classical DCF.
         """
-        mean_density = np.mean(self.density)
-        velocity_dispersion = np.std(self.velocity)
+        mean_density = np.mean(self.density_data * (2.3 * 1.67e-24))
+        velocity_dispersion = np.std(self.velocity_data * 1e6)
+        sigma_pol = circstd(self.polarization_data, high=np.pi, low=0)
 
-        return correction_factor * np.sqrt(4*np.pi*mean_density) * velocity_dispersion / sigma_pol
+        return correction_factor * np.sqrt(4*np.pi*mean_density) * (velocity_dispersion / sigma_pol)
 
 
-    def skalidis_DCF_calculation(self, mean_density, velocity_dispersion, correct_factor=1):
+    def skalidisDCF_calculation(self, correction_factor=1):
         """
         Bfield calculation for the Skalidis DCF.
         """
-        mean_density = np.mean(self.density)
-        velocity_dispersion = np.std(self.velocity)
+        mean_density = np.mean(self.density_data * (2.3 * 1.67e-24))
+        velocity_dispersion = np.std(self.velocity_data * 1e6)
+        sigma_pol = circstd(self.polarization_data, high=np.pi, low=0)
 
         return correction_factor * np.sqrt(2*np.pi*mean_density) * velocity_dispersion / np.sqrt(sigma_pol)
 
