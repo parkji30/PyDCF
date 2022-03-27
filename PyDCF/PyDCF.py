@@ -45,11 +45,8 @@ class PyDCF:
         bin_edges_norm = self.angular_dispersion_analysis[1]
         cos_disp_sq = self.angular_dispersion_analysis[2]
         bin_edges_sq = self.angular_dispersion_analysis[3]
-        print(cos_disp)
-        print(bin_edges_norm)
 
         W = self.beam_resolution / 2.35 # As defined in (Houde et al. 2009)
-
         cos_disp[1] = (cos_disp[0] + cos_disp[2]) / 2 # Interpreting data to remove NaaN values.
         cos_disp_sq[1] = (cos_disp_sq[0] + cos_disp_sq[2]) / 2 # Interpreting data to remove NaaN values.
 
@@ -116,29 +113,36 @@ class PyDCF:
         Bfield calculation using HH09 method.
         """
         mean_density = np.mean(self.density_data * (2.3 * 1.67e-24))
-        velocity_dispersion = np.std(self.velocity_data * 1e6)
+        velocity_dispersion = np.mean(self.velocity_data * 1e5)
 
         b_ratio = self.turbulent_cells * self.uncorrected_turbulent_ratio
         return np.sqrt(4 * np.pi * mean_density) * velocity_dispersion * b_ratio**(-0.5)
 
 
-    def classicalDCF_calculation(self, correction_factor=1):
+    def ClassicalDCF_calculation(self, correction_factor=1):
         """
         Bfield calculation for the classical DCF.
+
+        everything is calculated using CGS units
         """
         mean_density = np.mean(self.density_data * (2.3 * 1.67e-24))
-        velocity_dispersion = np.std(self.velocity_data * 1e6)
+        velocity_dispersion = np.mean(self.velocity_data * 1e5)
         sigma_pol = circstd(self.polarization_data, high=np.pi, low=0)
+
+        print(sigma_pol, mean_density, velocity_dispersion)
 
         return correction_factor * np.sqrt(4*np.pi*mean_density) * (velocity_dispersion / sigma_pol)
 
 
-    def skalidisDCF_calculation(self, correction_factor=1):
+    def SkalidisDCF_calculation(self, correction_factor=1):
         """
         Bfield calculation for the Skalidis DCF.
+
+
+        everything is calculated using CGS units
         """
         mean_density = np.mean(self.density_data * (2.3 * 1.67e-24))
-        velocity_dispersion = np.std(self.velocity_data * 1e6)
+        velocity_dispersion = np.mean(self.velocity_data * 1e5)
         sigma_pol = circstd(self.polarization_data, high=np.pi, low=0)
 
         return correction_factor * np.sqrt(2*np.pi*mean_density) * velocity_dispersion / np.sqrt(sigma_pol)
