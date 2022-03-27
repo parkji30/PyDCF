@@ -4,4 +4,3 @@ matplotlib
 astropy
 scipy
 regions
-aplpy
