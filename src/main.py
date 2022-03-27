@@ -10,6 +10,7 @@ from magnetic_field_calculations import *
 
 ## Loading the polarization angle data
 data = fits.open("L1M10_0.1.fits")[0].data
+vsigma = fits.open("")
 
 
 ## Coordinates and Size ##
