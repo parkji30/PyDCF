@@ -111,6 +111,8 @@ class PyDCF:
     def HH09DCF_calculation(self):
         """
         Bfield calculation using HH09 method.
+
+        everything is calculated using CGS units.
         """
         mean_density = np.mean(self.density_data * (2.3 * 1.67e-24))
         velocity_dispersion = np.mean(self.velocity_data * 1e5)
@@ -147,5 +149,18 @@ class PyDCF:
 
         return correction_factor * np.sqrt(2*np.pi*mean_density) * velocity_dispersion / np.sqrt(sigma_pol)
 
+
+    def correction_factors(self, true_bfield):
+        """
+        return's the correction factor for the magnetic field strength.
+
+        the correction factor is defined as Estimate / true_bfield.
+        """
+
+        print("Classical Correction Facotr" , self.ClassicalDCF_calculation / true_bfield)
+        print("Skalidis Correction Facotr" , self.SkalidisDCF_calculation / true_bfield)
+        print("HH09 Correction Facotr" , self.HH09DCF_calculation / true_bfield)
+
+        return [self.ClassicalDCF_calculation / true_bfield, self.SkalidisDCF_calculation / true_bfield, self.HH09DCF_calculation / true_bfield ]
 
 

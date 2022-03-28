@@ -26,6 +26,10 @@ data_rho_region = data_cut(x_cen, y_cen, rad, density, show=False)
 
 
 ## Declare PyDCF
+'''
+beam resolution and pixel scale must be in the same units.
+'''
+
 pold1 = PyDCF(data_pol_region,
               data_v_region,
               data_rho_region,
