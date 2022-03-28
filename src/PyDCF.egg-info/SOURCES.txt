@@ -1,0 +1,8 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+src/PyDCF.egg-info/PKG-INFO
+src/PyDCF.egg-info/SOURCES.txt
+src/PyDCF.egg-info/dependency_links.txt
+src/PyDCF.egg-info/top_level.txt
