@@ -2,7 +2,6 @@
 
 [![GitHub releases](https://img.shields.io/github/release/greenbone/PROJECT.svg)](https://github.com/parkji30/PyDCF/releases/tag/pilot)
 
-# Introduction
 
 Star formation is one of nature's many mysteries that has no clear explanation among astrophysicists and astronomers. Two fundamental forces of nature- Electromagnetism and Gravity, are believed to play a pivotal role during this process but appear to be in opposition to each other based on our current scientific theories.
 
