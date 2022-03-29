@@ -22,7 +22,6 @@ pip3 install PyDCF
 
 
 
-![Greenbone Logo](https://www.greenbone.net/wp-content/uploads/gb_logo_resilience_horizontal.png)
 
 # PyDCF (Davis Chandrasekhar Fermi Method In Python)
 
