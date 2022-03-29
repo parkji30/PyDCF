@@ -1,7 +1,7 @@
 # PyDCF (Davis Chandrasekhar Fermi Method In Python)
 
 [![GitHub releases](https://img.shields.io/github/release/greenbone/PROJECT.svg)](https://github.com/parkji30/PyDCF/releases)
-[![PyPI release](https://github.com/parkji30/PyDCF/releases)](https://pypi.org/project/PyDCF/)
+[![PyPI release](https://img.shields.io/pypi/v/PROJECT.svg)](https://pypi.org/project/PyDCF/)
 
 ## Introduction
 
