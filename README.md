@@ -20,12 +20,26 @@ pip3 install PyDCF
 ```
 
 ## Tutorial
-First, we need to load the data.
+First, we need to load the data. Go to the main file, this block of code loads the polarization data, velocity dispersion and mean density maps.
+
+Note- you need astropy or some version of fits opener installed.
 
 ```python
 data = fits.open("L1M10_0.1.fits")[0].data
 velocity = fits.open("L1M10_sigmav_0.1.fits")[0].data
 density = fits.open("L1M10_meanrho_0.1.fits")[0].data
+```
 
+Second, since our polarization map is 
+
+```python
+y_cen = (280)
+x_cen = (140)
+rad = 60
+
+# Taking a smaller region from the entire map.
+data_pol_region = data_cut(x_cen, y_cen, rad, data, show=True)
+data_v_region = data_cut(x_cen, y_cen, rad, velocity, show=False)
+data_rho_region = data_cut(x_cen, y_cen, rad, density, show=False)
 ```
 
