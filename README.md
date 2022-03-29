@@ -1,6 +1,6 @@
 # PyMDCF (Modified Davis Chandrasekhar Fermi Method In Python)
 
-[![GitHub releases](https://img.shields.io/github/release/greenbone/PROJECT.svg)](https://github.com/parkji30/PyDCF/releases/tag/pilot)[v1.0.0]
+[![GitHub releases](https://img.shields.io/github/release/greenbone/PROJECT.svg)](https://github.com/parkji30/PyDCF/releases/tag/pilot)
 
 # Introduction
 
