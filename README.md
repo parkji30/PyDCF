@@ -19,11 +19,7 @@ This method is based off the paper written by Houde et al. (2009)- https://arxiv
 pip3 install PyDCF
 ```
 
-### Requirements
-
-Use this section to list unusual dependencies or dependencies that must be installed manually.
-
-### Tutorial
+## Tutorial
 
 
 
