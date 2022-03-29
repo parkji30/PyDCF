@@ -55,3 +55,14 @@ pold1 = PyDCF(polarization = data_pol_region,
 
 pold1.calculate_angular_dispersions()
 ```
+
+Finally, call the fit function as shown
+```python
+pold1.HH09_fit(fit0 = 18, fitf = 25, cloud_depth = 1.51)
+pold1.HH09_parameters()
+```
+
+You should get a pretty plot that looks something like this!
+
+
+![img1](https://user-images.githubusercontent.com/28542017/160524270-76b4520f-93c2-4f4e-8b82-07a919a35346.png)
