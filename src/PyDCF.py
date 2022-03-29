@@ -37,14 +37,71 @@ class PyDCF:
             print("Edge length set to 0, using 5 times the beam resolution instead...")
 
         self.angular_dispersion_analysis = \
-                            angular_dispersion_calculation(self.polarization_data,
+                            self.angular_dispersion_calculation(self.polarization_data,
                                                             edge_length,
                                                             self.beam_resolution,
                                                             self.pixel_scale)
 
     def HH09_fit(self, fit0, fitf, cloud_depth):
         """
+        The famous modified dcf (HH09) fitting method based off the paper
+        Houde et al. 2009
+
+        @type fit0: Int (Starting point for linear fit)
+        @type fitf: Int (Finishing point for linear fit)
+        @type cloud_depth: float (Thickness of molecular cloud)
+        @rtype: None
         """
+
+        def linear_fit(x, m, b):
+            """
+            Linear Fit Function.
+            """
+            return m * x + b
+
+
+        def gauss_function(x, a, sigma):
+            """
+            Gaussian fit function.
+            """
+            return a * np.exp(-(x)**2 / (2 * sigma**2))
+
+
+        def total_gauss_function(x, a, W, delta):
+            """
+            Turbulent Gaussian fit function.
+
+            This is a simplified version of equation 21 in houde et al. 2009
+            """
+            return a * np.exp(-(x)**2 / (2*(delta**2 + 2*W**2)))
+
+
+        def turbulent_cells(delta, cloud_dep, beam_res):
+            """
+            Number of turbulent cells across the line of sight.
+
+            This is the "N" parameter in Houde et al. 2009.
+
+            @type delta: float (Turbulent Correlation Length)
+            @type cloud_dep: float (Depth of the cloud)
+            @type beam_res: float (resolution of the data)
+            @rtype: float
+
+            """
+            return ((delta**2 + 2*(beam_res**2)) * cloud_dep) / (np.sqrt(2*np.pi) * delta**3)
+
+
+        def turbulent_autocorrelation(distance, b_ratio, delta, W, ED):
+            """
+            b_strength: turbulent to large scale magnetic field ratio
+            delta: delta
+
+            Used to fit the gaussian for the 3rd plot.
+            """
+            return  np.sqrt(2*np.pi) * b_ratio**2 * (delta**3 / ((delta**2 + 2*W**2) * ED)) \
+                    * (np.exp(-distance**2 / (2*(delta**2 + 2*W**2))))
+
+
         cos_disp = self.angular_dispersion_analysis[0]
         bin_edges_norm = self.angular_dispersion_analysis[1]
         cos_disp_sq = self.angular_dispersion_analysis[2]
@@ -95,7 +152,7 @@ class PyDCF:
         self.turbulent_cells = N
         self.turbulent_correlation_length = analytic_turb_cof
         self.uncorrected_turbulent_ratio = uncorrected_turbulent_ratio
-        self.popt_guass = popt_gauss
+        self.popt_gauss = popt_gauss
 
     def HH09_parameters(self):
         """
@@ -106,9 +163,10 @@ class PyDCF:
         @rtype: None
         """
         N = self.turbulent_cells
-        Analytic_turb_cof = self.turbulent_correlation_length
+        analytic_turb_cof = self.turbulent_correlation_length
         uncorrected_turbulent_ratio = self.uncorrected_turbulent_ratio
 
+        print()
         print("Y-intercept (Uncorrected Turbulent-Ordered Ratio): ", uncorrected_turbulent_ratio)
         print('[ Amplitude  Sigma ]')
         print("Gaussian parameters are: ", self.popt_gauss)
@@ -148,8 +206,6 @@ class PyDCF:
         velocity_dispersion = np.mean(self.velocity_data * 1e5)
         sigma_pol = stats.circstd(self.polarization_data, high=np.pi, low=0)
 
-        print(sigma_pol, mean_density, velocity_dispersion)
-
         return correction_factor * np.sqrt(4*np.pi*mean_density) * (velocity_dispersion / sigma_pol)
 
 
@@ -157,12 +213,11 @@ class PyDCF:
         """
         Bfield calculation for the Skalidis DCF.
 
-
         everything is calculated using CGS units
         """
         mean_density = np.mean(self.density_data * (2.3 * 1.67e-24))
         velocity_dispersion = np.mean(self.velocity_data * 1e5)
-        sigma_pol = circstd(self.polarization_data, high=np.pi, low=0)
+        sigma_pol = stats.circstd(self.polarization_data, high=np.pi, low=0)
 
         return correction_factor * np.sqrt(2*np.pi*mean_density) * velocity_dispersion / np.sqrt(sigma_pol)
 
@@ -171,225 +226,159 @@ class PyDCF:
         """
         return's the correction factor for the magnetic field strength.
 
-        the correction factor is defined as Estimate / true_bfield.
+        The correction factor is defined as Estimate / true_bfield.
+        """
+        classical_CF = self.ClassicalDCF_calculation() / true_bfield
+        skalidis_CF = self.SkalidisDCF_calculation() / true_bfield
+        HH09_CF = self.HH09DCF_calculation() / true_bfield
+
+        print("Classical Correction Factor" , str(classical_CF))
+        print("Skalidis Correction Factor" , str(skalidis_CF))
+        print("HH09 Correction Factor" , str(HH09_CF))
+
+        return [classical_CF, skalidis_CF, HH09_CF]
+
+
+    def angular_dispersion_calculation(self, data, edge_length, beam_resolution, pixel_scale):
+        """
+        This function is used to calculate the structure function- i.e. the angular
+        difference between two points as a function of distance, and use binned statistics
+        to calculate the average across a certain distance range.
+
+        NOTE- the units of measurement for edge_length, beam_resolution, pixel_scale
+        should be defined by the author and consistent across each parameter.
+
+        As in, use CGS consistently throughout the analysis or SI units depending
+        on your situation.
+
+        @type data: Array
+        @type edge_length: Float (Typically this should be 5 * beam_resoultion)
+        @type beam_resolution: Float (Resolution of the polarization map)
+        @type pixel_scale: Float (Distance between 2 points on the map)
+        @rtype: List[Arrays]
         """
 
-        print("Classical Correction Factor" , str(self.ClassicalDCF_calculation / true_bfield))
-        print("Skalidis Correction Factor" , str(self.SkalidisDCF_calculation / true_bfield))
-        print("HH09 Correction Factor" , str(self.HH09DCF_calculation / true_bfield))
+        def calc_rel_angle_crossn(angle1, angle2):
+            """
+            Computing angular difference in code can often lead the wrapping errors-
+            i.e. 359 degrees is technically the same as 1 degrees but the computer does
+            not full comprehend that.
 
-        return [self.ClassicalDCF_calculation / true_bfield, self.SkalidisDCF_calculation / true_bfield, self.HH09DCF_calculation / true_bfield ]
+            This function is used to deal with any wrapping issues that may occur between
+            Arrays angle1 and angle2.
 
-def calc_rel_angle_crossn(angle1, angle2):
-    """
-    Computing angular difference in code can often lead the wrapping errors-
-    i.e. 359 degrees is technically the same as 1 degrees but the computer does
-    not full comprehend that.
+            @type angle1: Numpy Array
+            @type angle2: Numpy Array
+            @rtype: Numpy Array
+            """
+            angle1 = np.array(angle1)
+            angle2 = np.array(angle2)
+            n = len(angle1)
+            if n == 1:
+                x1 = (-1.0) * np.sin(angle1[0])
+                y1 = np.cos(angle1[0])
+                x2 = (-1.0) * np.sin(angle2[0])
+                y2 = np.cos(angle2[0])
+                v1 = np.array([x1, y1, 0])
+                v2 = np.array([x2, y2, 0])
+                C = np.cross(v1, v2)
+                CdC = np.dot(C, C)
+                vdgr = np.dot(v1, v2)
+                d_ang0 = np.arctan2(np.sqrt(CdC), vdgr)
+                return np.array([d_ang0])
+            elif n > 1:
+                x1 = (-1.0) * np.sin(angle1.reshape(1, n))
+                y1 = np.cos(angle1.reshape(1, n))
+                x2 = (-1.0) * np.sin(angle2.reshape(1, n))
+                y2 = np.cos(angle2.reshape(1, n))
+                v1 = np.array([x1, y1, np.zeros((1, n))])
+                v2 = np.array([x2, y2, np.zeros((1, n))])
+                vi = np.asmatrix(v1).T
+                vf = np.asmatrix(v2).T
+                try:
+                    C = np.cross(vi, vf)
+                except:
+                    print("crossing error!")
 
-    This function is used to deal with any wrapping issues that may occur between
-    Arrays angle1 and angle2.
+                CdC = np.sum(C * C, 1)
 
-    @type angle1: Numpy Array
-    @type angle2: Numpy Array
-    @rtype: Numpy Array
-    """
-    angle1 = np.array(angle1)
-    angle2 = np.array(angle2)
-    n = len(angle1)
-    if n == 1:
-        x1 = (-1.0) * np.sin(angle1[0])
-        y1 = np.cos(angle1[0])
-        x2 = (-1.0) * np.sin(angle2[0])
-        y2 = np.cos(angle2[0])
-        v1 = np.array([x1, y1, 0])
-        v2 = np.array([x2, y2, 0])
-        C = np.cross(v1, v2)
-        CdC = np.dot(C, C)
-        vdgr = np.dot(v1, v2)
-        d_ang0 = np.arctan2(np.sqrt(CdC), vdgr)
-        return np.array([d_ang0])
-    elif n > 1:
-        x1 = (-1.0) * np.sin(angle1.reshape(1, n))
-        y1 = np.cos(angle1.reshape(1, n))
-        x2 = (-1.0) * np.sin(angle2.reshape(1, n))
-        y2 = np.cos(angle2.reshape(1, n))
-        v1 = np.array([x1, y1, np.zeros((1, n))])
-        v2 = np.array([x2, y2, np.zeros((1, n))])
-        vi = np.asmatrix(v1).T
-        vf = np.asmatrix(v2).T
-        try:
-            C = np.cross(vi, vf)
-        except:
-            print("crossing error!")
+                vdgr = []
+                for i in range(len(vi)):
+                    vector = v1[0][0][i] * v2[0][0][i] + \
+                                v1[1][0][i] * v2[1][0][i] + \
+                                v1[2][0][i] * v2[2][0][i]
+                    vdgr.append(vector)
+                vdgr = np.array(vdgr)
+                d_ang0 = np.arctan2(np.sqrt(CdC), np.abs(vdgr))
+                return d_ang0
 
-        CdC = np.sum(C * C, 1)
+        x, y, pix_ang, dphi = [], [], [], []
 
-        vdgr = []
-        for i in range(len(vi)):
-            vector = v1[0][0][i] * v2[0][0][i] + \
-                        v1[1][0][i] * v2[1][0][i] + \
-                        v1[2][0][i] * v2[2][0][i]
-            vdgr.append(vector)
-        vdgr = np.array(vdgr)
-        d_ang0 = np.arctan2(np.sqrt(CdC), np.abs(vdgr))
-        return d_ang0
+        for i in range(data.shape[0]):
+            for j in range(data.shape[1]):
+                if not np.isnan(data[i][j]):
+                    x.append(i)
+                    y.append(j)
+                    pix_ang.append(data[i][j])
+        x = np.array(x)
+        y = np.array(y)
+        ang = np.array(pix_ang)
 
+        nump = len(ang)
+        delta_r = []
+        delta_phi = []
+        phi = ang
 
-def angular_dispersion_calculation(data, edge_length, beam_resolution, pixel_scale):
-    """
-    This function is used to calculate the structure function- i.e. the angular
-    difference between two points as a function of distance, and use binned statistics
-    to calculate the average across a certain distance range.
+        for i in range(nump):
+            delta_x_arr = x[i] - x[(i+1):(nump)]
+            delta_y_arr = y[i] - y[(i+1):(nump)]
+            delta_r_arr = np.sqrt(delta_x_arr**2 + delta_y_arr**2)
+            sz_phi = len(delta_x_arr)
+            phi_ref = np.repeat(phi[i], sz_phi)
 
-    NOTE- the units of measurement for edge_length, beam_resolution, pixel_scale
-    should be defined by the author and consistent across each parameter.
+            if len(phi_ref) > 0:
+                delta_phi_arr = calc_rel_angle_crossn(phi_ref, phi[(i+1):(nump)])
 
-    As in, use CGS consistently throughout the analysis or SI units depending
-    on your situation.
+            delta_r.append(delta_r_arr)
+            delta_phi.append(delta_phi_arr)
 
-    @type data: Array
-    @type edge_length: Float (Typically this should be 5 * beam_resoultion)
-    @type beam_resolution: Float (Resolution of the polarization map)
-    @type pixel_scale: Float (Distance between 2 points on the map)
-    @rtype: List[Arrays]
-    """
-    x, y, pix_ang, dphi = [], [], [], []
+        delta_r = np.array(delta_r)
+        delta_phi = np.array(delta_phi[:-1]) # Last value is added twice for some reason.
 
-    for i in range(data.shape[0]):
-        for j in range(data.shape[1]):
-            if not np.isnan(data[i][j]):
-                x.append(i)
-                y.append(j)
-                pix_ang.append(data[i][j])
-    x = np.array(x)
-    y = np.array(y)
-    ang = np.array(pix_ang)
+        delta_r = np.concatenate(delta_r).ravel() * pixel_scale
+        delta_phi = np.concatenate(delta_phi).ravel()
 
-    nump = len(ang)
-    delta_r = []
-    delta_phi = []
-    phi = ang
+        bin_edge = edge_length / pixel_scale
 
-    for i in range(nump):
-        delta_x_arr = x[i] - x[(i+1):(nump)]
-        delta_y_arr = y[i] - y[(i+1):(nump)]
-        delta_r_arr = np.sqrt(delta_x_arr**2 + delta_y_arr**2)
-        sz_phi = len(delta_x_arr)
-        phi_ref = np.repeat(phi[i], sz_phi)
+        if beam_resolution == 0:
+            nbins = 21
+        else:
+            nbins = np.floor((edge_length / beam_resolution * 5)) # Default use 5 samples / beam.
 
-        if len(phi_ref) > 0:
-            delta_phi_arr = calc_rel_angle_crossn(phi_ref, phi[(i+1):(nump)])
+        print(f'Structure function analysis used: {nbins} number of bins')
 
-        delta_r.append(delta_r_arr)
-        delta_phi.append(delta_phi_arr)
+        bin_edges = (np.linspace(0, bin_edge, int(nbins))) * pixel_scale
+        cos_disp, bin_edges_norm, bin_number_cos = stats.binned_statistic(delta_r, np.cos(delta_phi), 'mean', bins=bin_edges)
+        cos_disp_sq, bin_edges_sq, bin_number_sq = stats.binned_statistic((delta_r)**2, np.cos(delta_phi), 'mean', bins=bin_edges**2)
 
-    delta_r = np.array(delta_r)
-    delta_phi = np.array(delta_phi[:-1]) # Last value is added twice for some reason.
+        cos_disp = np.insert(cos_disp, 0, 1)
+        cos_disp_sq = np.insert(cos_disp_sq, 0, 1)
 
-    delta_r = np.concatenate(delta_r).ravel() * pixel_scale
-    delta_phi = np.concatenate(delta_phi).ravel()
-
-    bin_edge = edge_length / pixel_scale
-
-    if beam_resolution == 0:
-        nbins = 21
-    else:
-        nbins = np.floor((edge_length / beam_resolution * 5)) # Default use 5 samples / beam.
-
-    print(f'Structure function analysis used: {nbins} number of bins')
-
-    bin_edges = (np.linspace(0, bin_edge, int(nbins))) * pixel_scale
-    cos_disp, bin_edges_norm, bin_number_cos = stats.binned_statistic(delta_r, np.cos(delta_phi), 'mean', bins=bin_edges)
-    cos_disp_sq, bin_edges_sq, bin_number_sq = stats.binned_statistic((delta_r)**2, np.cos(delta_phi), 'mean', bins=bin_edges**2)
-
-    cos_disp = np.insert(cos_disp, 0, 1)
-    cos_disp_sq = np.insert(cos_disp_sq, 0, 1)
-
-    return [cos_disp, bin_edges_norm, cos_disp_sq, bin_edges_sq]
+        return [cos_disp, bin_edges_norm, cos_disp_sq, bin_edges_sq]
 
 
-def data_cut(x_cen, y_cen, rad, image, show=False):
-    '''
-    This function is used to cut a square region from a map based
-    on the radius and coordinates provided.
+    def Imshow(self, map, **kwargs):
+        """
+        Simple function to display an image.
+        """
+        if map == 'polarization':
+            image = self.polarization_data
+        elif map == 'velocity':
+            image = self.velocity_data
+        elif map == 'density':
+            image = self.density_data
 
-    The last argument, show, can be toggled to display the region.
-
-    @type x_cen: Int
-    @type y_cen: Int
-    @type rad: Float
-    @type image: Numpy Array
-    @type show: Boolean
-    @rtype: Numpy Array (Snipped Region)
-    '''
-    if show:
-        fig, ax = plt.subplots(figsize=(10,6))
-        region = RectanglePixelRegion(center=PixCoord(x=x_cen, y=y_cen), width=rad, height=rad)
-        plt.imshow(image, cmap='hsv')
+        plt.figure(figsize=(8, 6))
+        plt.imshow(image, origin='lower')
         plt.colorbar()
-        region.plot(ax=ax, color='white')
         plt.show()
-    reg = RectanglePixelRegion(center=PixCoord(x=x_cen, y=y_cen), width=rad, height=rad)
-    mask = reg.to_mask()
-    mask = reg.to_mask(mode='center')
-    dt = mask.cutout(image)
-    return dt
-
-
-def Imshow(image, **kwargs):
-    """
-    Simple function to display an image.
-    """
-    plt.figure(figsize=(8, 6))
-    plt.imshow(image, origin='lower')
-    plt.colorbar()
-    plt.show()
-
-
-def linear_fit(x, m, b):
-    """
-    Linear Fit Function.
-    """
-    return m * x + b
-
-
-def gauss_function(x, a, sigma):
-    """
-    Gaussian fit function.
-    """
-    return a * np.exp(-(x)**2 / (2 * sigma**2))
-
-
-def total_gauss_function(x, a, W, delta):
-    """
-    Turbulent Gaussian fit function.
-
-    This is a simplified version of equation 21 in houde et al. 2009
-    """
-    return a * np.exp(-(x)**2 / (2*(delta**2 + 2*W**2)))
-
-
-def turbulent_cells(delta, cloud_dep, beam_res):
-    """
-    Number of turbulent cells across the line of sight.
-
-    This is the "N" parameter in Houde et al. 2009.
-
-    @type delta: float (Turbulent Correlation Length)
-    @type cloud_dep: float (Depth of the cloud)
-    @type beam_res: float (resolution of the data)
-    @rtype: float
-
-    """
-    return ((delta**2 + 2*(beam_res**2)) * cloud_dep) / (np.sqrt(2*np.pi) * delta**3)
-
-
-def turbulent_autocorrelation(distance, b_ratio, delta, W, ED):
-    """
-    b_strength: turbulent to large scale magnetic field ratio
-    delta: delta
-
-    Used to fit the gaussian for the 3rd plot.
-    """
-    return  np.sqrt(2*np.pi) * b_ratio**2 * (delta**3 / ((delta**2 + 2*W**2) * ED)) \
-            * (np.exp(-distance**2 / (2*(delta**2 + 2*W**2))))
