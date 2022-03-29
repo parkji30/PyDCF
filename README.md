@@ -72,3 +72,7 @@ print(str(pold1.SkalidisDCF_calculation()*1e6) + " Microgauss")
 print(str(pold1.HH09DCF_calculation()*1e6) + " Microgauss")
 pold1.correction_factors(10)
 ```
+
+<img width="338" alt="Screen Shot 2022-03-29 at 4 41 22 PM" src="https://user-images.githubusercontent.com/28542017/160704219-4e40c573-08f1-4c28-aace-191c3bcb7450.png">
+
+
