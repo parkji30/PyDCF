@@ -1,25 +1,24 @@
-# PyDCF (Davis Chandrasekhar Fermi Method In Python)
+# PyMDCF (Modified Davis Chandrasekhar Fermi Method In Python)
 
 [![GitHub releases](https://img.shields.io/github/release/greenbone/PROJECT.svg)](https://github.com/parkji30/PyDCF/releases)
 [![PyPI release](https://img.shields.io/pypi/v/PROJECT.svg)](https://pypi.org/project/PyDCF/)
 
-## Introduction
+# INTRODUCTION
 
 Star formation is one of nature's many mysteries that has no clear explanation among astrophysicists and astronomers. Two fundamental forces of nature- Electromagnetism and Gravity, are believed to play a pivotal role during this process but appear to be in opposition to each other based on our current scientific theories.
 
 The Davis Chandrasekhar Fermi method is an proposed theory that uses the polarization of light to calculate the large scale magnetic field strength of the interstellar medium. Through this method, we can analyze polarization maps in order to have a stronger understanding of the role that Magnetic fields play in the Star Formation Process.
 
-Since it's initial proposition, the method has gone through several modificiations.
+Since it's initial proposition, the method has gone through several modificiations, one of which, is the famous HH09 (or MDCF) variation proposed by Martin Houde et al. (2009)- https://arxiv.org/pdf/0909.5227.pdf.
 
-This method is based off the paper written by Houde et al. (2009)- https://arxiv.org/pdf/0909.5227.pdf.
 
-## Installation
+# INSTALLATION
 
 ```python
 pip3 install PyDCF
 ```
 
-## Tutorial
+# TUTORIAL
 First, we need to load the data. Go to the main file, this block of code loads the polarization data, velocity dispersion and mean density maps.
 
 Note- you need astropy or some version of fits opener installed.
@@ -64,5 +63,14 @@ pold1.HH09_parameters()
 
 You should get a pretty plot that looks something like this!
 
-
 ![img1](https://user-images.githubusercontent.com/28542017/160524270-76b4520f-93c2-4f4e-8b82-07a919a35346.png)
+
+Lastly, if we want to compare the Classical, MDCF and even the Skalidis method, we can call the follow methods:
+The correction factor method takes the true magnetic field strength of the simulation and returns the estimated value divided by the true value.
+
+```python
+print(str(pold1.ClassicalDCF_calculation()*1e6) + " Microgauss")
+print(str(pold1.SkalidisDCF_calculation()*1e6) + " Microgauss")
+print(str(pold1.HH09DCF_calculation()*1e6) + " Microgauss")
+pold1.correction_factors(10)
+```
