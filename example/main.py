@@ -2,22 +2,20 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from astropy.io import fits
-os.chdir("/Users/a16472/desktop/mdcf/PyDCF")
+os.chdir("/Users/a16472/desktop/PyDCF/src")
 
 from PyDCF import *
-from dispersion_analysis import *
 
 ## Loading the polarization angle data
 data = fits.open("L1M10_0.1.fits")[0].data
 velocity = fits.open("L1M10_sigmav_0.1.fits")[0].data
-print(np.mean(velocity))
 density = fits.open("L1M10_meanrho_0.1.fits")[0].data
 
 
 ## Region Snipping
 y_cen = (280)
 x_cen = (140)
-rad = 80
+rad = 60
 
 # Taking a smaller region from the entire map.
 data_pol_region = data_cut(x_cen, y_cen, rad, data, show=True)
@@ -39,11 +37,13 @@ pold1 = PyDCF(data_pol_region,
 
 pold1.calculate_angular_dispersions()
 
-## Fit
+## MDCF Fit
 pold1.HH09_fit(18, 25, 1.51)
+pold1.HH09_parameters()
 
 
 ## Calculate Magnetic Field Strength
 print(str(pold1.ClassicalDCF_calculation()*1e6) + " Microgauss")
 print(str(pold1.SkalidisDCF_calculation()*1e6) + " Microgauss")
 print(str(pold1.HH09DCF_calculation()*1e6) + " Microgauss")
+pold1.correction_factors(10)
