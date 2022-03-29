@@ -20,6 +20,12 @@ pip3 install PyDCF
 ```
 
 ## Tutorial
+First, we need to load the data.
 
+```python
+data = fits.open("L1M10_0.1.fits")[0].data
+velocity = fits.open("L1M10_sigmav_0.1.fits")[0].data
+density = fits.open("L1M10_meanrho_0.1.fits")[0].data
 
+```
 
