@@ -27,19 +27,6 @@ pip3 install PyDCF
 
 [![GitHub releases](https://img.shields.io/github/release/greenbone/PROJECT.svg)](https://github.com/greenbone/PROJECT/releases)
 [![PyPI release](https://img.shields.io/pypi/v/PROJECT.svg)](https://pypi.org/project/PROJECT/)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/greenbone/PROJECT/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/greenbone/PROJECT/?branch=master)
-[![code test coverage](https://codecov.io/gh/greenbone/PROJECT/branch/master/graph/badge.svg)](https://codecov.io/gh/greenbone/PROJECT)
-[![CircleCI](https://circleci.com/gh/greenbone/PROJECT/tree/master.svg?style=svg)](https://circleci.com/gh/greenbone/PROJECT/tree/master)
-
-TODO: Replace PROJECT with project references!
-
-TODO: The readme of releases and on PyPI should be clean, so remove badges when branching off.
-
-Short description in less than 120 characters. Use also for GitHub and package managers.
-
-Long description that explains what the project does at a high level. Background information and features also belong here.
-
-optional one screenshot
 
 ## Table of Contents
 
