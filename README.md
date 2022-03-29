@@ -30,7 +30,7 @@ velocity = fits.open("L1M10_sigmav_0.1.fits")[0].data
 density = fits.open("L1M10_meanrho_0.1.fits")[0].data
 ```
 
-Second, since our polarization map is 
+Second, since our polarization map is too large for the HH09 method, so we need to snip it down and make it smaller. Let's look at a highly filamentary region.
 
 ```python
 y_cen = (280)
@@ -43,3 +43,15 @@ data_v_region = data_cut(x_cen, y_cen, rad, velocity, show=False)
 data_rho_region = data_cut(x_cen, y_cen, rad, density, show=False)
 ```
 
+Third, load up the PyDCF package and initialize it with the data.
+
+```python
+pold1 = PyDCF(polarization = data_pol_region,
+              velocity = data_v_region,
+              density = data_rho_region,
+              beam_resolution = 0.1,
+              pixel_scale = 10/512)
+
+
+pold1.calculate_angular_dispersions()
+```
