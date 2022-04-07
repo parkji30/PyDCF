@@ -1,6 +1,6 @@
 # PyMDCF (Modified Davis Chandrasekhar Fermi Method In Python)
 
-[![PyPi releases](https://pypi.org/project/PyDCF/1.0.1/)
+<!-- [![PyPi releases](https://pypi.org/project/PyDCF/1.0.1/) -->
 
 
 Star formation is one of nature's many mysteries that has no clear explanation among astrophysicists and astronomers. Two fundamental forces of nature- Electromagnetism and Gravity, are believed to play a pivotal role during this process but appear to be in opposition to each other based on our current scientific theories.
