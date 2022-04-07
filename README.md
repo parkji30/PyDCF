@@ -12,6 +12,8 @@ Since it's initial proposition, the method has gone through several modificiatio
 
 # Installation
 
+PyDCF is available for installation through PyPI 
+
 ```python
 pip3 install PyDCF
 ```
