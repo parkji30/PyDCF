@@ -1,21 +1,19 @@
-# PyMDCF (Modified Davis Chandrasekhar Fermi Method In Python)
-
-<!-- [![PyPi releases](https://pypi.org/project/PyDCF/1.0.1/) -->
-
+# PyDCF (Modified Davis Chandrasekhar Fermi Method In Python)
 
 Star formation is one of nature's many mysteries that has no clear explanation among astrophysicists and astronomers. Two fundamental forces of nature- Electromagnetism and Gravity, are believed to play a pivotal role during this process but appear to be in opposition to each other based on our current scientific theories.
 
-The Davis Chandrasekhar Fermi method is an proposed theory that uses the polarization of light to calculate the large scale magnetic field strength of the interstellar medium. Through this method, we can analyze polarization maps in order to have a stronger understanding of the role that Magnetic fields play in the Star Formation Process.
+The Davis Chandrasekhar Fermi method is an proposed theory that uses the polarization of light to calculate the large scale magnetic field strength of the interstellar medium. Through this method, we can analyze polarization maps in order to have a stronger understanding of the role that Magnetic fields play in the Star Formation Process. Many variations of the DCF method have been formulated over the past decades,
+one of which is the famous HH09 Analytical Dispersion method proposed by Martin Houde et al. (2009)- https://arxiv.org/pdf/0909.5227.pdf.
 
-Since it's initial proposition, the method has gone through several modificiations, one of which, is the famous HH09 (or MDCF) variation proposed by Martin Houde et al. (2009)- https://arxiv.org/pdf/0909.5227.pdf.
+PyDCF serves as a Python implementation of the HH09 Analytical DCF method, a variation of the Classical DCF method which can correct for the overestimation effects not accounted in the classical DCF method which are typically induced by sources such as: beam smoothing, differential rotation, and bending of the magnetic field due to gravity.
 
+A quick, in-depth guide is shown below. If anything is still confusing, please do not hestitate to reach out to me at jp7dec23@gmail.com. 
 
 # Installation
-
-PyDCF is available for installation through PyPI 
+PyDCF is available for installation through PyPI (Current version is 1.0.3).
 
 ```python
-pip3 install PyDCF
+pip3 install PyDCF==1.0.3
 ```
 
 # Tutorial

@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="PyDCF",
-    version="1.0.1",
+    version="1.0.3",
     author="Jinsoo Park",
     author_email="jp7dec23@gmail.com",
     description="The Davis Chandrasekhar Fermi method written in python",
