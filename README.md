@@ -35,21 +35,7 @@ density = fits.open("Mean_Density_Data.fits")[0].data
 
 Since our polarization map is too large for the HH09 method to compute in a short time, lets choose to analyze a smaller region from it.
 
-The run-time complexity of the HH09 DCF method is O(n!) for reference.
-
-
-```python
-y_cen = (280)
-x_cen = (140)
-rad = 60
-
-# Taking a smaller region from the entire map.
-data_pol_region = PyDCF.data_cut(x_cen, y_cen, rad, data, show=True)
-data_v_region = PyDCF.data_cut(x_cen, y_cen, rad, velocity, show=False)
-data_rho_region = PyDCF.data_cut(x_cen, y_cen, rad, density, show=False)
-```
-
-You're going to need to input the resolution and pixel scale of the data as well. Now we can call PyDCF.
+You're going to need to input the resolution and pixel scale of the data as well. Now we initialize PyDCF.
 
 ```python
 pold1 = PyDCF(polarization = data_pol_region,
@@ -57,6 +43,25 @@ pold1 = PyDCF(polarization = data_pol_region,
               density = data_rho_region,
               beam_resolution = 0.1,
               pixel_scale = 10/512)
+```
+
+:warning: **If you are dealing with large mapsr**: the computation can be quite expensive. The run-time complexity of the HH09 DCF method is O(n!) for reference. 
+
+Let's cut the map into smaller regions for analysis instead. You can choose to just use the entire map but it could take a while.
+```python
+y_cen = (280)
+x_cen = (140)
+rad = 60
+
+# Take a smaller region from the entire map.
+data_pol_region = PyDCF.data_cut(x_cen, y_cen, rad, data, show=True)
+data_v_region = PyDCF.data_cut(x_cen, y_cen, rad, velocity, show=False)
+data_rho_region = PyDCF.data_cut(x_cen, y_cen, rad, density, show=False)
+```
+
+Update the data with the smaller regions. This replaces the previous polarization, velocity, density maps with the newer ones.
+```python
+PyDCF.update_data(data_pol_region, data_v_region, data_rho_region):
 ```
 
 Next we calculate the angular dispersion function as defined by Eq. 6 in https://arxiv.org/pdf/0909.5227.pdf. This is necessary in order to calculate the magnetic field strength using the HH09 DCF method.
