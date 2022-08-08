@@ -58,7 +58,7 @@ data_rho_region = PyDCF.data_cut(x_cen, y_cen, rad, density, show=False)
 
 Update the data with the smaller regions. This replaces the previous polarization, velocity, density maps with the newer ones.
 ```python
-PyDCF.update_data(data_pol_region, data_v_region, data_rho_region):
+PyDCF.update_data(data_pol_region, data_v_region, data_rho_region)
 ```
 
 Next we calculate the angular dispersion function as defined by Eq. 6 in https://arxiv.org/pdf/0909.5227.pdf. This is necessary in order to calculate the magnetic field strength using the HH09 DCF method.
