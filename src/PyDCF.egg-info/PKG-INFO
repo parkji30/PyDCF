@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: PyDCF
-Version: 1.0.4
+Version: 1.0.5
 Summary: The Davis Chandrasekhar Fermi method written in python
 Home-page: https://github.com/parkji30/PyDCF
 Author: Jinsoo Park
@@ -15,19 +15,19 @@ License-File: LICENSE
 
 # PyDCF (Davis Chandrasekhar Fermi Method In Python)
 
-The Davis Chandrasekhar Fermi method is an proposed theory that uses the polarization of light to calculate the magnetic field strength of molecular clouds. Through this method, we can analyze polarization maps in order to have a stronger understanding of the role that Magnetic fields play in the Star Formation Process. 
+The Davis Chandrasekhar Fermi method is an proposed theory that uses the polarization of light to calculate the magnetic field strength of molecular clouds. Through this method, we can analyze polarization maps in order to have a stronger understanding of the role that magnetic fields play in the Star Formation Process. 
 
 Many variations of the DCF method have been formulated over the past decades, one of which is the famous HH09 Analytical Dispersion method proposed by Martin Houde et al. (2009)- https://arxiv.org/pdf/0909.5227.pdf.
 
-PyDCF serves as a Python implementation of the HH09 Analytical DCF method, a variation of the Classical DCF method which can correct for the overestimation effects not accounted in the classical DCF method which are typically induced by sources such as: beam smoothing, differential rotation, and bending of the magnetic field due to gravity.
+PyDCF serves as a Python implementation of the HH09 Analytical DCF method, a variation of the Classical DCF method which can correct for the overestimation effects not accounted in the Classical DCF method such as: beam smoothing, differential rotation, and bending of the magnetic field due to gravity.
 
 A quick, in-depth guide is shown below. If anything is still confusing, please do not hestitate to reach out to me at jp7dec23@gmail.com. 
 
 # Installation
-PyDCF is available for installation through PyPI (Current version is 1.0.4).
+PyDCF is available for installation through PyPI (Current version is 1.0.5).
 
 ```python
-pip3 install PyDCF==1.0.4
+pip3 install PyDCF==1.0.5
 ```
 
 # Tutorial
