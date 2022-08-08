@@ -33,8 +33,6 @@ velocity = fits.open("Velocity_Dispersion_Data.fits")[0].data
 density = fits.open("Mean_Density_Data.fits")[0].data
 ```
 
-Since our polarization map is too large for the HH09 method to compute in a short time, lets choose to analyze a smaller region from it.
-
 You're going to need to input the resolution and pixel scale of the data as well. Now we initialize PyDCF.
 
 ```python
@@ -44,8 +42,7 @@ pold1 = PyDCF(polarization = data_pol_region,
               beam_resolution = 0.1,
               pixel_scale = 10/512)
 ```
-
-:warning: **If you are dealing with large mapsr**: the computation can be quite expensive. The run-time complexity of the HH09 DCF method is O(n!) for reference. 
+:warning: **If you are dealing with large maps**: the computation can be quite expensive. The run-time complexity of the HH09 DCF method is O(n!) for reference. 
 
 Let's cut the map into smaller regions for analysis instead. You can choose to just use the entire map but it could take a while.
 ```python
