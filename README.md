@@ -9,10 +9,10 @@ PyDCF serves as a Python implementation of the HH09 Analytical DCF method, a var
 A quick, in-depth guide is shown below. If anything is still confusing, please do not hestitate to reach out to me at jp7dec23@gmail.com. 
 
 # Installation
-PyDCF is available for installation through PyPI (Current version is 1.0.5).
+PyDCF is available for installation through PyPI (Current version is 1.0.7).
 
 ```python
-pip3 install PyDCF==1.0.5
+pip3 install PyDCF==1.0.7
 ```
 
 # Tutorial
