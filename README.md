@@ -42,7 +42,7 @@ pold1 = PyDCF(polarization = data_pol_region,
               beam_resolution = 0.1,
               pixel_scale = 10/512)
 ```
-:warning: **If you are dealing with large maps**: the computation can be quite expensive. The run-time complexity of the HH09 DCF method is O(n!) for reference. 
+:warning: **If you are dealing with large maps**, the computation can be quite expensive. The run-time complexity of the HH09 DCF method is O(n!) for reference. 
 
 Let's cut the map into smaller regions for analysis instead. You can choose to just use the entire map but it could take a while.
 ```python
