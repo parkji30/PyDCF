@@ -25,7 +25,6 @@ from astropy.io import fits
 
 Now, we load the data. Using the fits module, load the polarization data, velocity dispersion and mean density maps. 
 
-**Note**
 You will have to change the file name in the code below to your respective files.
 
 ```python
@@ -36,7 +35,6 @@ density = fits.open("Mean_Density_Data.fits")[0].data
 
 Since our polarization map is too large for the HH09 method to compute in a short time, lets choose to analyze a smaller region from it.
 
-**Important**
 The run-time complexity of the HH09 DCF method is O(n!) for reference.
 
 

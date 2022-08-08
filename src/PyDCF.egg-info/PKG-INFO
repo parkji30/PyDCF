@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: PyDCF
-Version: 1.0.3
+Version: 1.0.4
 Summary: The Davis Chandrasekhar Fermi method written in python
 Home-page: https://github.com/parkji30/PyDCF
 Author: Jinsoo Park
@@ -40,7 +40,6 @@ from astropy.io import fits
 
 Now, we load the data. Using the fits module, load the polarization data, velocity dispersion and mean density maps. 
 
-** Note **
 You will have to change the file name in the code below to your respective files.
 
 ```python
@@ -49,9 +48,9 @@ velocity = fits.open("Velocity_Dispersion_Data.fits")[0].data
 density = fits.open("Mean_Density_Data.fits")[0].data
 ```
 
-Since our polarization map is too large for the HH09 method, lets choose to analyze a smaller region from it.
+Since our polarization map is too large for the HH09 method to compute in a short time, lets choose to analyze a smaller region from it.
 
-You can try to load the entire map but you might run out of memory or the computation could take hours. The run-time complexity is O(n!) for reference.
+The run-time complexity of the HH09 DCF method is O(n!) for reference.
 
 
 ```python
@@ -65,23 +64,17 @@ data_v_region = PyDCF.data_cut(x_cen, y_cen, rad, velocity, show=False)
 data_rho_region = PyDCF.data_cut(x_cen, y_cen, rad, density, show=False)
 ```
 
-Now we can call the PyDCF module and input the regions from above.
-
-You're going to need to input the resolution and pixel scale of the data as well.
+You're going to need to input the resolution and pixel scale of the data as well. Now we can call PyDCF.
 
 ```python
-
-import PyDCF
-
 pold1 = PyDCF(polarization = data_pol_region,
               velocity = data_v_region,
               density = data_rho_region,
               beam_resolution = 0.1,
               pixel_scale = 10/512)
-
 ```
 
-Next we calculate the angular dispersion function as defined by Equation 6 in https://arxiv.org/pdf/0909.5227.pdf. This is necessary in order to calculate the magnetic field strength using the HH09 DCF method.
+Next we calculate the angular dispersion function as defined by Eq. 6 in https://arxiv.org/pdf/0909.5227.pdf. This is necessary in order to calculate the magnetic field strength using the HH09 DCF method.
 
 ```python
 pold1.calculate_angular_dispersions()
@@ -98,7 +91,7 @@ You should get a pretty plot that looks something like this!
 ![img1](https://user-images.githubusercontent.com/28542017/160524270-76b4520f-93c2-4f4e-8b82-07a919a35346.png)
 
 
-Now you can calculate the magnetic field strength through using the HH09 DCF method. I've also included the Classical (https://articles.adsabs.harvard.edu/pdf/1953ApJ...118..113C) and Skalidis (https://arxiv.org/pdf/2010.15141.pdf) DCF methods here to compare all three variations.
+Now you can calculate the magnetic field strength through using the HH09 DCF method. I've also included the Classical DCF (https://articles.adsabs.harvard.edu/pdf/1953ApJ...118..113C) and Skalidis DCF (https://arxiv.org/pdf/2010.15141.pdf) methods in this Python Package.
 
 The DCF methods return the field strength in Gauss.
 

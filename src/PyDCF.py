@@ -9,7 +9,7 @@ class PyDCF:
 
     def __init__(self, polarization, velocity, density, beam_resolution, pixel_scale):
         """
-        Initialize a new MDCFPy module object
+        Initialize a new PyDCF object. Saves the data into different attributes.
         """
 
         self.polarization_data = polarization
@@ -59,22 +59,11 @@ class PyDCF:
             """
             return m * x + b
 
-
         def gauss_function(x, a, sigma):
             """
             Gaussian fit function.
             """
             return a * np.exp(-(x)**2 / (2 * sigma**2))
-
-
-        def total_gauss_function(x, a, W, delta):
-            """
-            Turbulent Gaussian fit function.
-
-            This is a simplified version of equation 21 in houde et al. 2009
-            """
-            return a * np.exp(-(x)**2 / (2*(delta**2 + 2*W**2)))
-
 
         def turbulent_cells(delta, cloud_dep, beam_res):
             """
@@ -89,7 +78,6 @@ class PyDCF:
 
             """
             return ((delta**2 + 2*(beam_res**2)) * cloud_dep) / (np.sqrt(2*np.pi) * delta**3)
-
 
         def turbulent_autocorrelation(distance, b_ratio, delta, W, ED):
             """
@@ -182,7 +170,6 @@ class PyDCF:
         else:
             print(np.sqrt(uncorrected_turbulent_ratio))
 
-
     def HH09DCF_calculation(self):
         """
         Bfield calculation using HH09 method.
@@ -194,7 +181,6 @@ class PyDCF:
 
         b_ratio = self.turbulent_cells * self.uncorrected_turbulent_ratio
         return np.sqrt(4 * np.pi * mean_density) * velocity_dispersion * b_ratio**(-0.5)
-
 
     def ClassicalDCF_calculation(self, correction_factor=1):
         """
@@ -208,7 +194,6 @@ class PyDCF:
 
         return correction_factor * np.sqrt(4*np.pi*mean_density) * (velocity_dispersion / sigma_pol)
 
-
     def SkalidisDCF_calculation(self, correction_factor=1):
         """
         Bfield calculation for the Skalidis DCF.
@@ -220,24 +205,6 @@ class PyDCF:
         sigma_pol = stats.circstd(self.polarization_data, high=np.pi, low=0)
 
         return correction_factor * np.sqrt(2*np.pi*mean_density) * velocity_dispersion / np.sqrt(sigma_pol)
-
-
-    def correction_factors(self, true_bfield):
-        """
-        return's the correction factor for the magnetic field strength.
-
-        The correction factor is defined as Estimate / true_bfield.
-        """
-        classical_CF = self.ClassicalDCF_calculation() / true_bfield
-        skalidis_CF = self.SkalidisDCF_calculation() / true_bfield
-        HH09_CF = self.HH09DCF_calculation() / true_bfield
-
-        print("Classical Correction Factor" , str(classical_CF))
-        print("Skalidis Correction Factor" , str(skalidis_CF))
-        print("HH09 Correction Factor" , str(HH09_CF))
-
-        return [classical_CF, skalidis_CF, HH09_CF]
-
 
     def angular_dispersion_calculation(self, data, edge_length, beam_resolution, pixel_scale):
         """
